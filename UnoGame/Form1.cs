@@ -16,5 +16,9 @@ namespace UnoGame
         {
             InitializeComponent();
         }
+        public class Card()
+        {
+            //Atributos de la clase
+        }
     }
 }
