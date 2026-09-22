@@ -17,4 +17,9 @@ namespace UnoGame
             InitializeComponent();
         }
     }
+
+    public void repartirCartas()
+    {
+
+    }
 }
