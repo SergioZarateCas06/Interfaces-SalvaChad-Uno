@@ -16,5 +16,8 @@ namespace UnoGame
         {
             InitializeComponent();
         }
+        void shuffle();
+        void draw();
+        void countcards(); //int
     }
 }
