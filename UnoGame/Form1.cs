@@ -171,4 +171,29 @@ namespace UnoGame
     public enum CardColor { Rojo, Azul, Verde, Amarillo, Ninguno };
     public enum CardType { Numero, Salta, Reversa, Mas2, Comodin, ComodinMas4 };
 
+    private void RepartirCartas()
+    {
+        Cartas1.Clear();
+        Cartas2.Clear();
+        Cartas3.Clear();
+        Cartas4.Clear();
+
+        BarajarMazo();
+
+        foreach (Player jugador in jugadores)
+        {
+            for (int i = 0; i < 7; i++)
+            {
+                jugador.Agregar_carta(SacarCarta());
+            }
+        }
+        ultimaCarta = SacarCarta();
+
+        // Si la primera carta es Comodín +4, se devuelve al mazo, se barajea junto con lo que queda y se voltea otra
+        while (ultimaCarta != null && ultimaCarta.Type == CardType.ComodinMas4)
+        {
+            DevolverYBarajar(ultimaCarta);
+            ultimaCarta = SacarCarta();
+        }
+    }
 }
