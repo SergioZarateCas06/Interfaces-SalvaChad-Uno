@@ -196,4 +196,25 @@ namespace UnoGame
             ultimaCarta = SacarCarta();
         }
     }
+
+    private void DevolverYBarajar(Card carta)
+    {
+        List<Card> restante = new List<Card>(burra);
+        restante.Add(carta);
+
+        Random rnd = new Random();
+        int n = restante.Count;
+        while (n > 1)
+        {
+            n--;
+            int k = rnd.Next(n + 1);
+            Card value = restante[k];
+            restante[k] = restante[n];
+            restante[n] = value;
+        }
+
+        burra.Clear();
+        foreach (Card c in restante)
+            burra.Push(c);
+    }
 }
