@@ -16,7 +16,7 @@ namespace UnoGame
         int numJugadores = 4;
         Card ultimaCarta;
         int turno = 1;
-
+        public CardColor colorActivo;
         Stack<Card> burra = new Stack<Card>();
         Stack<Card> descarte = new Stack<Card>();
         List<Card> Cartas1 = new List<Card>();
@@ -96,11 +96,43 @@ namespace UnoGame
             foreach (Card carta in mazo)
                 burra.Push(carta);
         }
-        private void JugarCarta(Card cartaJugada)
+        private void JugarCarta(Card cartaJugada, CardColor colorElegido = CardColor.Ninguno)
         {
             descarte.Push(cartaJugada);
-        }
 
+            if (cartaJugada.Type == CardType.Comodin || cartaJugada.Type == CardType.ComodinMas4)
+                colorActivo = colorElegido;
+            else
+ 
+                colorActivo = cartaJugada.Color;
+            
+        }
+        public bool JugadaValida(Card cartaJugada)
+        {
+            Card ultimaCarta = VerCartaSuperior();
+         
+
+            if (cartaJugada.Type == CardType.Comodin || cartaJugada.Type == CardType.ComodinMas4)
+                return true;
+            CardColor colorenjuego = (ultimaCarta.Color == CardColor.Ninguno) ? colorActivo : ultimaCarta.Color;
+            if (cartaJugada.Color == colorenjuego)
+                return true;
+            if (cartaJugada.Type == CardType.Numero && ultimaCarta.Type == CardType.Numero)
+                if (cartaJugada.Number == ultimaCarta.Number)
+                    return true;
+            if (cartaJugada.Type != CardType.Numero && cartaJugada.Type == ultimaCarta.Type)
+                return true;
+            return false;
+        }
+        public bool TieneJugadaValida(List<Card> mano)
+        {
+            foreach (Card carta in mano)
+            {
+                if (JugadaValida(carta))
+                    return true;
+            }
+            return false;
+        }
         public Card VerCartaSuperior()
         {
             if (descarte.Count > 0)
