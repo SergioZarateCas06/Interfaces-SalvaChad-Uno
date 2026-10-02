@@ -200,24 +200,36 @@ namespace UnoGame
             List<Card> manoActual = manosJugadores[turno];
             string nombreJugadorActual = jugadores[turno].Nombre;
 
-            string mano = "";
-            for (int i = 0; i < manoActual.Count; i++)
-                mano += $"{i}: {manoActual[i]}\n";
-
-            string entrada = Interaction.InputBox(
-                $"Turno de {nombreJugadorActual}\nCarta en mesa: {VerCartaSuperior()} (color activo: {colorActivo})\n\n{mano}\n" +
-                "Escribe el número de la carta que quieres jugar, o -1 si no tienes ninguna jugable:",
-                "Jugar carta", "-1");
-
-            int indice;
-            if (!int.TryParse(entrada, out indice))
+            while (true)
             {
-                MessageBox.Show("Entrada no válida, intenta de nuevo.");
-                return;
-            }
+                string mano = "";
+                for (int i = 0; i < manoActual.Count; i++)
+                    mano += $"{i}: {manoActual[i]}\n";
 
-            if (indice >= 0 && indice < manoActual.Count)
-            {
+                string entrada = Interaction.InputBox(
+                    $"Turno de {nombreJugadorActual}\nCarta en mesa: {VerCartaSuperior()} (color activo: {colorActivo})\n\n{mano}\n" +
+                    "Escribe el número de la carta que quieres jugar, o -1 si no tienes ninguna jugable:",
+                    "Jugar carta", "-1");
+
+                int indice;
+                if (!int.TryParse(entrada, out indice))
+                {
+                    MessageBox.Show("Entrada no válida, intenta de nuevo.");
+                    continue;
+                }
+
+                if (indice == -1)
+                {
+                    TomarCartaYIntentarJugar(nombreJugadorActual);
+                    return;
+                }
+
+                if (indice < 0 || indice >= manoActual.Count)
+                {
+                    MessageBox.Show("Ese número no corresponde a ninguna carta de tu mano. Intenta de nuevo.");
+                    continue;
+                }
+
                 Card cartaElegida = manoActual[indice];
 
                 if (JugadaValida(cartaElegida))
@@ -229,16 +241,13 @@ namespace UnoGame
                     manoActual.Remove(cartaElegida);
                     JugarCarta(cartaElegida, colorElegido);
                     MessageBox.Show($"{nombreJugadorActual} jugó {cartaElegida}");
+                    return;
                 }
                 else
                 {
-                    MessageBox.Show("Esa jugada no es válida. Vas a tomar una carta.");
-                    TomarCartaYIntentarJugar(nombreJugadorActual);
+                    MessageBox.Show("Esa carta no es una jugada válida. Elige otra.");
+                    continue;
                 }
-            }
-            else
-            {
-                TomarCartaYIntentarJugar(nombreJugadorActual);
             }
         }
 
