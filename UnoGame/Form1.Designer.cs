@@ -30,6 +30,8 @@
         {
             this.richTextBox1 = new System.Windows.Forms.RichTextBox();
             this.button1 = new System.Windows.Forms.Button();
+            this.Avanzar_turno = new System.Windows.Forms.Button();
+            this.Invertir_sentido = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // richTextBox1
@@ -51,11 +53,33 @@
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.botonRepartir);
             // 
+            // Avanzar_turno
+            // 
+            this.Avanzar_turno.Location = new System.Drawing.Point(617, 21);
+            this.Avanzar_turno.Name = "Avanzar_turno";
+            this.Avanzar_turno.Size = new System.Drawing.Size(130, 40);
+            this.Avanzar_turno.TabIndex = 2;
+            this.Avanzar_turno.Text = "Avanzar_turno";
+            this.Avanzar_turno.UseVisualStyleBackColor = true;
+            this.Avanzar_turno.Click += new System.EventHandler(this.Avanzar_turno_Click);
+            // 
+            // Invertir_sentido
+            // 
+            this.Invertir_sentido.Location = new System.Drawing.Point(620, 95);
+            this.Invertir_sentido.Name = "Invertir_sentido";
+            this.Invertir_sentido.Size = new System.Drawing.Size(127, 45);
+            this.Invertir_sentido.TabIndex = 3;
+            this.Invertir_sentido.Text = "Invertir_sentido";
+            this.Invertir_sentido.UseVisualStyleBackColor = true;
+            this.Invertir_sentido.Click += new System.EventHandler(this.Invertir_turno_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.Invertir_sentido);
+            this.Controls.Add(this.Avanzar_turno);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.richTextBox1);
             this.Name = "Form1";
@@ -68,6 +92,8 @@
 
         private System.Windows.Forms.RichTextBox richTextBox1;
         private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button Avanzar_turno;
+        private System.Windows.Forms.Button Invertir_sentido;
     }
 }
 
