@@ -5,6 +5,7 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
+using Microsoft.VisualBasic;
 
 namespace UnoGame
 {
@@ -22,6 +23,7 @@ namespace UnoGame
         List<Card> Cartas3 = new List<Card>();
         List<Card> Cartas4 = new List<Card>();
         List<Player> jugadores = new List<Player>();
+        List<Card>[] manosJugadores;
         public event Action<int> TurnoCambiado;
 
         public Form1()
@@ -31,6 +33,7 @@ namespace UnoGame
             jugadores.Add(new Player("Jugador 2", Cartas2));
             jugadores.Add(new Player("Jugador 3", Cartas3));
             jugadores.Add(new Player("Jugador 4", Cartas4));
+            manosJugadores = new List<Card>[] { Cartas1, Cartas2, Cartas3, Cartas4 };
             TurnoCambiado += MostrarTurno;
             RepartirCartas();
         }
@@ -191,6 +194,102 @@ namespace UnoGame
                     burra.Push(c);
             }
         }
+
+        private void JugarTurno()
+        {
+            List<Card> manoActual = manosJugadores[turno];
+            string nombreJugadorActual = jugadores[turno].Nombre;
+
+            while (true)
+            {
+                string mano = "";
+                for (int i = 0; i < manoActual.Count; i++)
+                    mano += $"{i}: {manoActual[i]}\n";
+
+                string entrada = Interaction.InputBox(
+                    $"Turno de {nombreJugadorActual}\nCarta en mesa: {VerCartaSuperior()} (color activo: {colorActivo})\n\n{mano}\n" +
+                    "Escribe el número de la carta que quieres jugar, o -1 si no tienes ninguna jugable:",
+                    "Jugar carta", "-1");
+
+                int indice;
+                if (!int.TryParse(entrada, out indice))
+                {
+                    MessageBox.Show("Entrada no válida, intenta de nuevo.");
+                    continue;
+                }
+
+                if (indice == -1)
+                {
+                    TomarCartaYIntentarJugar(nombreJugadorActual);
+                    return;
+                }
+
+                if (indice < 0 || indice >= manoActual.Count)
+                {
+                    MessageBox.Show("Ese número no corresponde a ninguna carta de tu mano. Intenta de nuevo.");
+                    continue;
+                }
+
+                Card cartaElegida = manoActual[indice];
+
+                if (JugadaValida(cartaElegida))
+                {
+                    CardColor colorElegido = CardColor.Ninguno;
+                    if (cartaElegida.Type == CardType.Comodin || cartaElegida.Type == CardType.ComodinMas4)
+                        colorElegido = PedirColor();
+
+                    manoActual.Remove(cartaElegida);
+                    JugarCarta(cartaElegida, colorElegido);
+                    MessageBox.Show($"{nombreJugadorActual} jugó {cartaElegida}");
+                    return;
+                }
+                else
+                {
+                    MessageBox.Show("Esa carta no es una jugada válida. Elige otra.");
+                    continue;
+                }
+            }
+        }
+
+        private void TomarCartaYIntentarJugar(string nombreJugadorActual)
+        {
+            Card cartaRobada = SacarCarta();
+
+            if (cartaRobada == null)
+            {
+                MessageBox.Show("No quedan cartas para robar.");
+                AvanzarTurno();
+                return;
+            }
+
+            if (JugadaValida(cartaRobada))
+            {
+                CardColor colorElegido = CardColor.Ninguno;
+                if (cartaRobada.Type == CardType.Comodin || cartaRobada.Type == CardType.ComodinMas4)
+                    colorElegido = PedirColor();
+
+                MessageBox.Show($"{nombreJugadorActual} robó {cartaRobada} y se jugó automáticamente.");
+                JugarCarta(cartaRobada, colorElegido);
+            }
+            else
+            {
+                manosJugadores[turno].Add(cartaRobada);
+                MessageBox.Show($"{nombreJugadorActual} robó {cartaRobada} y no es jugable, se la queda.");
+                AvanzarTurno();
+            }
+        }
+
+        private CardColor PedirColor()
+        {
+            string entrada = Interaction.InputBox(
+                "Elige un color (Rojo, Azul, Verde, Amarillo):", "Elegir color", "Rojo");
+
+            CardColor color;
+            if (Enum.TryParse(entrada, true, out color) && color != CardColor.Ninguno)
+                return color;
+
+            return CardColor.Rojo;
+        }
         private void richTextBox1_TextChanged(object sender, EventArgs e)
         {
 
@@ -297,6 +396,10 @@ namespace UnoGame
         private void Invertir_turno_Click(object sender, EventArgs e)
         {
             InvertirSentido();
+        }
+        private void button2_Click(object sender, EventArgs e)
+        {
+            JugarTurno();
         }
     }
 
