@@ -135,6 +135,18 @@ namespace UnoGame
             if (cartaJugada.Type == CardType.Salta)
                 AvanzarTurno();
 
+            if (cartaJugada.Type == CardType.Mas2)
+            {
+                int siguienteJugador = (turno + sentido + numJugadores) % numJugadores;
+                for (int i = 0; i < 2; i++)
+                {
+                    Card cartaRobada = SacarCarta();
+                    if (cartaRobada != null)
+                        manosJugadores[siguienteJugador].Add(cartaRobada);
+                }
+                AvanzarTurno();
+            }
+
             AvanzarTurno();
             
         }
