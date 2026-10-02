@@ -4,9 +4,6 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Web;
 using System.Windows.Forms;
 
 namespace UnoGame
@@ -15,7 +12,8 @@ namespace UnoGame
     {
         int numJugadores = 4;
         Card ultimaCarta;
-        int turno = 1;
+        int turno = 0;
+        int sentido = 1;
         public CardColor colorActivo;
         Stack<Card> burra = new Stack<Card>();
         Stack<Card> descarte = new Stack<Card>();
@@ -24,6 +22,7 @@ namespace UnoGame
         List<Card> Cartas3 = new List<Card>();
         List<Card> Cartas4 = new List<Card>();
         List<Player> jugadores = new List<Player>();
+        public event Action<int> TurnoCambiado;
 
         public Form1()
         {
@@ -32,6 +31,7 @@ namespace UnoGame
             jugadores.Add(new Player("Jugador 2", Cartas2));
             jugadores.Add(new Player("Jugador 3", Cartas3));
             jugadores.Add(new Player("Jugador 4", Cartas4));
+            TurnoCambiado += MostrarTurno;
             RepartirCartas();
         }
 
@@ -50,6 +50,26 @@ namespace UnoGame
                 }
             }
             return null;
+        }
+
+        void MostrarTurno(int t)
+        {
+            richTextBox1.Text = "Turno de: " + jugadores[t].Nombre;
+        }
+
+
+        void AvanzarTurno()
+        {
+            turno = (turno + sentido + numJugadores) % numJugadores;
+            if (TurnoCambiado != null)
+            {
+                TurnoCambiado.Invoke(turno);
+            }
+        }
+
+        void InvertirSentido()
+        {
+            sentido = -sentido;
         }
 
         int CartasRestantes()
@@ -105,6 +125,14 @@ namespace UnoGame
             else
  
                 colorActivo = cartaJugada.Color;
+
+            if (cartaJugada.Type == CardType.Reversa)
+                InvertirSentido();
+
+            if (cartaJugada.Type == CardType.Salta)
+                AvanzarTurno();
+
+            AvanzarTurno();
             
         }
         public bool JugadaValida(Card cartaJugada)
@@ -230,6 +258,9 @@ namespace UnoGame
                 DevolverYBarajar(ultimaCarta);
                 ultimaCarta = SacarCarta();
             }
+            descarte.Clear();
+            descarte.Push(ultimaCarta);
+            colorActivo = ultimaCarta.Color;
         }
 
         private void DevolverYBarajar(Card carta)
@@ -256,6 +287,16 @@ namespace UnoGame
         {
             BarajarMazo();
             richTextBox1.Text = string.Join(", ", burra.Select(c => c.ToString()));
+        }
+
+        private void Avanzar_turno_Click(object sender, EventArgs e)
+        {
+            AvanzarTurno();
+        }
+
+        private void Invertir_turno_Click(object sender, EventArgs e)
+        {
+            InvertirSentido();
         }
     }
 
