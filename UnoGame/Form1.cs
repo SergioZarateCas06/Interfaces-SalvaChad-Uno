@@ -24,11 +24,21 @@ namespace UnoGame
         List<Card> Cartas4 = new List<Card>();
         List<Player> jugadores = new List<Player>();
         List<Card>[] manosJugadores;
+        Button botonUno;
         public event Action<int> TurnoCambiado;
 
         public Form1()
         {
             InitializeComponent();
+            botonUno = new Button();
+            botonUno.Text = "UNO";
+            botonUno.Size = new Size(80, 40);
+            botonUno.Location = new Point(20, 20);
+            botonUno.Click += botonUno_Click;
+            botonUno.Visible = false;
+            Controls.Add(botonUno);
+            botonUno.BringToFront();
+
             jugadores.Add(new Player("Jugador 1", Cartas1));
             jugadores.Add(new Player("Jugador 2", Cartas2));
             jugadores.Add(new Player("Jugador 3", Cartas3));
@@ -58,6 +68,7 @@ namespace UnoGame
         void MostrarTurno(int t)
         {
             richTextBox1.Text = "Turno de: " + jugadores[t].Nombre;
+            ActualizarBotonUno();
         }
 
 
@@ -68,6 +79,17 @@ namespace UnoGame
             {
                 TurnoCambiado.Invoke(turno);
             }
+        }
+
+        void CallUno(Player jugador)
+        {
+            jugador.callUno();
+        }
+
+        void ActualizarBotonUno()
+        {
+            if (botonUno != null)
+                botonUno.Visible = jugadores[turno].cantidad_cartas == 2;
         }
 
         void InvertirSentido()
@@ -121,7 +143,21 @@ namespace UnoGame
         }
         private void JugarCarta(Card cartaJugada, CardColor colorElegido = CardColor.Ninguno)
         {
+            if (!JugadaValida(cartaJugada))
+            {
+                MessageBox.Show("La jugada no es valida");
+                return;
+            }
+
+
             descarte.Push(cartaJugada);
+            jugadores[turno].Quitar_carta(cartaJugada);
+            if (jugadores[turno].cantidad_cartas == 1 && !jugadores[turno].DijoUno)
+            {
+                MessageBox.Show($"{jugadores[turno].Nombre} no dijo UNO a tiempo. ¡Penalización de 2 cartas!");
+                for (int i = 0; i < 2; i++)
+                jugadores[turno].Agregar_carta(SacarCarta());
+            }
 
             if (cartaJugada.Type == CardType.Comodin || cartaJugada.Type == CardType.Mas4)
                 colorActivo = colorElegido;
@@ -140,9 +176,7 @@ namespace UnoGame
                 int siguienteJugador = (turno + sentido + numJugadores) % numJugadores;
                 for (int i = 0; i < 2; i++)
                 {
-                    Card cartaRobada = SacarCarta();
-                    if (cartaRobada != null)
-                        manosJugadores[siguienteJugador].Add(cartaRobada);
+                    jugadores[siguienteJugador].Agregar_carta(SacarCarta());
                 }
                 AvanzarTurno();
             }
@@ -151,9 +185,7 @@ namespace UnoGame
                 int siguienteJugador = (turno + sentido + numJugadores) % numJugadores;
                 for (int i = 0; i < 4; i++)
                 {
-                    Card cartaRobada = SacarCarta();
-                    if (cartaRobada != null)
-                        manosJugadores[siguienteJugador].Add(cartaRobada);
+                    jugadores[siguienteJugador].Agregar_carta(SacarCarta());
                 }
                 AvanzarTurno();
             }
@@ -261,7 +293,7 @@ namespace UnoGame
                     if (cartaElegida.Type == CardType.Comodin || cartaElegida.Type == CardType.Mas4)
                         colorElegido = PedirColor();
 
-                    manoActual.Remove(cartaElegida);
+
                     JugarCarta(cartaElegida, colorElegido);
                     MessageBox.Show($"{nombreJugadorActual} jugó {cartaElegida}");
                     return;
@@ -292,11 +324,12 @@ namespace UnoGame
                     colorElegido = PedirColor();
 
                 MessageBox.Show($"{nombreJugadorActual} robó {cartaRobada} y se jugó automáticamente.");
+                jugadores[turno].Agregar_carta(cartaRobada);
                 JugarCarta(cartaRobada, colorElegido);
             }
             else
             {
-                manosJugadores[turno].Add(cartaRobada);
+                jugadores[turno].Agregar_carta(cartaRobada);
                 MessageBox.Show($"{nombreJugadorActual} robó {cartaRobada} y no es jugable, se la queda.");
                 AvanzarTurno();
             }
@@ -334,11 +367,20 @@ namespace UnoGame
         {
             public string Nombre;
             private List<Card> mano;
+            public bool DijoUno;
 
+            public void callUno()
+            {
+                if (mano.Count == 2)
+                {
+                    DijoUno = true;
+                }
+            }
             public Player(string nombre, List<Card> mano)
             {
                 this.Nombre = nombre;
                 this.mano = mano;
+                this.DijoUno = false;
             }
             public int cantidad_cartas
             {
@@ -349,6 +391,7 @@ namespace UnoGame
                 if (carta != null)
                 {
                     mano.Add(carta);
+                    DijoUno = false;
                 }
             }
             public bool Quitar_carta(Card carta)
@@ -383,6 +426,7 @@ namespace UnoGame
             descarte.Clear();
             descarte.Push(ultimaCarta);
             colorActivo = ultimaCarta.Color;
+            ActualizarBotonUno();
         }
 
         private void DevolverYBarajar(Card carta)
@@ -423,6 +467,19 @@ namespace UnoGame
         private void button2_Click(object sender, EventArgs e)
         {
             JugarTurno();
+        }
+
+        private void botonUno_Click(object sender, EventArgs e)
+        {
+            CallUno(jugadores[turno]);
+            if (jugadores[turno].DijoUno)
+            {
+                MessageBox.Show($"{jugadores[turno].Nombre} dijo UNO.");
+                botonUno.Visible = false;
+            }
+                
+            else
+                MessageBox.Show("Solo puedes decir UNO cuando tienes 2 cartas, antes de jugar la penúltima.");
         }
     }
 
