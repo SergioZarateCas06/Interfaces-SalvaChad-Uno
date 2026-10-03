@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Windows.Forms;
 
 namespace UnoGame
@@ -24,6 +25,7 @@ namespace UnoGame
         List<Player> jugadores = new List<Player>();
         public event Action<int> TurnoCambiado;
 
+
         public Form1()
         {
             InitializeComponent();
@@ -33,6 +35,7 @@ namespace UnoGame
             jugadores.Add(new Player("Jugador 4", Cartas4));
             TurnoCambiado += MostrarTurno;
             RepartirCartas();
+            
         }
 
         Card SacarCarta()
@@ -118,7 +121,19 @@ namespace UnoGame
         }
         private void JugarCarta(Card cartaJugada, CardColor colorElegido = CardColor.Ninguno)
         {
+            if(!JugadaValida(cartaJugada))
+            {
+                MessageBox.Show("La jugada no es valida");
+                return;
+            }
             descarte.Push(cartaJugada);
+            jugadores[turno].Quitar_carta(cartaJugada);
+            if (jugadores[turno].cantidad_cartas == 1 && !jugadores[turno].DijoUno)
+            {
+                MessageBox.Show($"{jugadores[turno].Nombre} no dijo UNO a tiempo. ¡Penalización de 2 cartas!");
+                for (int i=0;i<2;i++)
+                    jugadores[turno].Agregar_carta(SacarCarta());
+            }
 
             if (cartaJugada.Type == CardType.Comodin || cartaJugada.Type == CardType.ComodinMas4)
                 colorActivo = colorElegido;
@@ -211,12 +226,19 @@ namespace UnoGame
         public class Player
         {
             public string Nombre;
+            public bool DijoUno;
             private List<Card> mano;
 
+            public void callUno()
+            {
+                if(mano.Count==2)
+                    DijoUno = true;                
+            }
             public Player(string nombre, List<Card> mano)
             {
                 this.Nombre = nombre;
                 this.mano = mano;
+                this.DijoUno = false;
             }
             public int cantidad_cartas
             {
@@ -227,6 +249,7 @@ namespace UnoGame
                 if (carta != null)
                 {
                     mano.Add(carta);
+                    DijoUno=false;
                 }
             }
             public bool Quitar_carta(Card carta)
@@ -260,6 +283,7 @@ namespace UnoGame
             }
             descarte.Clear();
             descarte.Push(ultimaCarta);
+            
             colorActivo = ultimaCarta.Color;
         }
 
