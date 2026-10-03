@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Windows.Forms;
+using Microsoft.VisualBasic;
 
 namespace UnoGame
 {
@@ -23,6 +24,7 @@ namespace UnoGame
         List<Card> Cartas3 = new List<Card>();
         List<Card> Cartas4 = new List<Card>();
         List<Player> jugadores = new List<Player>();
+        List<Card>[] manosJugadores;
         public event Action<int> TurnoCambiado;
 
 
@@ -33,6 +35,7 @@ namespace UnoGame
             jugadores.Add(new Player("Jugador 2", Cartas2));
             jugadores.Add(new Player("Jugador 3", Cartas3));
             jugadores.Add(new Player("Jugador 4", Cartas4));
+            manosJugadores = new List<Card>[] { Cartas1, Cartas2, Cartas3, Cartas4 };
             TurnoCambiado += MostrarTurno;
             RepartirCartas();
             
@@ -102,7 +105,7 @@ namespace UnoGame
             for (int i = 0; i < 4; i++)
             {
                 mazo.Add(new Card(-1, CardColor.Ninguno, CardType.Comodin));
-                mazo.Add(new Card(-1, CardColor.Ninguno, CardType.ComodinMas4));
+                mazo.Add(new Card(-1, CardColor.Ninguno, CardType.Mas4));
             }
 
             Random rnd = new Random();
@@ -135,7 +138,7 @@ namespace UnoGame
                     jugadores[turno].Agregar_carta(SacarCarta());
             }
 
-            if (cartaJugada.Type == CardType.Comodin || cartaJugada.Type == CardType.ComodinMas4)
+            if (cartaJugada.Type == CardType.Comodin || cartaJugada.Type == CardType.Mas4)
                 colorActivo = colorElegido;
             else
  
@@ -147,6 +150,29 @@ namespace UnoGame
             if (cartaJugada.Type == CardType.Salta)
                 AvanzarTurno();
 
+            if (cartaJugada.Type == CardType.Mas2)
+            {
+                int siguienteJugador = (turno + sentido + numJugadores) % numJugadores;
+                for (int i = 0; i < 2; i++)
+                {
+                    Card cartaRobada = SacarCarta();
+                    if (cartaRobada != null)
+                        manosJugadores[siguienteJugador].Add(cartaRobada);
+                }
+                AvanzarTurno();
+            }
+            if (cartaJugada.Type == CardType.Mas4)
+            {
+                int siguienteJugador = (turno + sentido + numJugadores) % numJugadores;
+                for (int i = 0; i < 4; i++)
+                {
+                    Card cartaRobada = SacarCarta();
+                    if (cartaRobada != null)
+                        manosJugadores[siguienteJugador].Add(cartaRobada);
+                }
+                AvanzarTurno();
+            }
+
             AvanzarTurno();
             
         }
@@ -155,7 +181,7 @@ namespace UnoGame
             Card ultimaCarta = VerCartaSuperior();
          
 
-            if (cartaJugada.Type == CardType.Comodin || cartaJugada.Type == CardType.ComodinMas4)
+            if (cartaJugada.Type == CardType.Comodin || cartaJugada.Type == CardType.Mas4)
                 return true;
             CardColor colorenjuego = (ultimaCarta.Color == CardColor.Ninguno) ? colorActivo : ultimaCarta.Color;
             if (cartaJugada.Color == colorenjuego)
@@ -205,6 +231,102 @@ namespace UnoGame
                 foreach (Card c in cartasRestantes)
                     burra.Push(c);
             }
+        }
+
+        private void JugarTurno()
+        {
+            List<Card> manoActual = manosJugadores[turno];
+            string nombreJugadorActual = jugadores[turno].Nombre;
+
+            while (true)
+            {
+                string mano = "";
+                for (int i = 0; i < manoActual.Count; i++)
+                    mano += $"{i}: {manoActual[i]}\n";
+
+                string entrada = Interaction.InputBox(
+                    $"Turno de {nombreJugadorActual}\nCarta en mesa: {VerCartaSuperior()} (color activo: {colorActivo})\n\n{mano}\n" +
+                    "Escribe el número de la carta que quieres jugar, o -1 si no tienes ninguna jugable:",
+                    "Jugar carta", "-1");
+
+                int indice;
+                if (!int.TryParse(entrada, out indice))
+                {
+                    MessageBox.Show("Entrada no válida, intenta de nuevo.");
+                    continue;
+                }
+
+                if (indice == -1)
+                {
+                    TomarCartaYIntentarJugar(nombreJugadorActual);
+                    return;
+                }
+
+                if (indice < 0 || indice >= manoActual.Count)
+                {
+                    MessageBox.Show("Ese número no corresponde a ninguna carta de tu mano. Intenta de nuevo.");
+                    continue;
+                }
+
+                Card cartaElegida = manoActual[indice];
+
+                if (JugadaValida(cartaElegida))
+                {
+                    CardColor colorElegido = CardColor.Ninguno;
+                    if (cartaElegida.Type == CardType.Comodin || cartaElegida.Type == CardType.Mas4)
+                        colorElegido = PedirColor();
+
+                    manoActual.Remove(cartaElegida);
+                    JugarCarta(cartaElegida, colorElegido);
+                    MessageBox.Show($"{nombreJugadorActual} jugó {cartaElegida}");
+                    return;
+                }
+                else
+                {
+                    MessageBox.Show("Esa carta no es una jugada válida. Elige otra.");
+                    continue;
+                }
+            }
+        }
+
+        private void TomarCartaYIntentarJugar(string nombreJugadorActual)
+        {
+            Card cartaRobada = SacarCarta();
+
+            if (cartaRobada == null)
+            {
+                MessageBox.Show("No quedan cartas para robar.");
+                AvanzarTurno();
+                return;
+            }
+
+            if (JugadaValida(cartaRobada))
+            {
+                CardColor colorElegido = CardColor.Ninguno;
+                if (cartaRobada.Type == CardType.Comodin || cartaRobada.Type == CardType.Mas4)
+                    colorElegido = PedirColor();
+
+                MessageBox.Show($"{nombreJugadorActual} robó {cartaRobada} y se jugó automáticamente.");
+                JugarCarta(cartaRobada, colorElegido);
+            }
+            else
+            {
+                manosJugadores[turno].Add(cartaRobada);
+                MessageBox.Show($"{nombreJugadorActual} robó {cartaRobada} y no es jugable, se la queda.");
+                AvanzarTurno();
+            }
+        }
+
+        private CardColor PedirColor()
+        {
+            string entrada = Interaction.InputBox(
+                "Elige un color (Rojo, Azul, Verde, Amarillo):", "Elegir color", "Rojo");
+
+            CardColor color;
+            if (Enum.TryParse(entrada, true, out color) && color != CardColor.Ninguno)
+                return color;
+
+            return CardColor.Rojo;
         }
         private void richTextBox1_TextChanged(object sender, EventArgs e)
         {
@@ -276,7 +398,7 @@ namespace UnoGame
             ultimaCarta = SacarCarta();
 
             // Si la primera carta es Comodín +4, se devuelve al mazo, se barajea junto con lo que queda y se voltea otra
-            while (ultimaCarta != null && ultimaCarta.Type == CardType.ComodinMas4)
+            while (ultimaCarta != null && ultimaCarta.Type == CardType.Mas4)
             {
                 DevolverYBarajar(ultimaCarta);
                 ultimaCarta = SacarCarta();
@@ -322,10 +444,14 @@ namespace UnoGame
         {
             InvertirSentido();
         }
+        private void button2_Click(object sender, EventArgs e)
+        {
+            JugarTurno();
+        }
     }
 
     public enum CardColor { Rojo, Azul, Verde, Amarillo, Ninguno };
-    public enum CardType { Numero, Salta, Reversa, Mas2, Comodin, ComodinMas4 };
+    public enum CardType { Numero, Salta, Reversa, Mas2, Comodin, Mas4 };
 
     public class Card
     {
@@ -352,7 +478,7 @@ namespace UnoGame
                     return $"{Color} Reversa";
                 case CardType.Mas2:
                     return $"{Color} +2";
-                case CardType.ComodinMas4:
+                case CardType.Mas4:
                     return "Comodin +4";
                 case CardType.Comodin:
                     return "Comodin";
