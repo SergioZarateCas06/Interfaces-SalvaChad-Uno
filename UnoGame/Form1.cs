@@ -102,7 +102,7 @@ namespace UnoGame
             for (int i = 0; i < 4; i++)
             {
                 mazo.Add(new Card(-1, CardColor.Ninguno, CardType.Comodin));
-                mazo.Add(new Card(-1, CardColor.Ninguno, CardType.ComodinMas4));
+                mazo.Add(new Card(-1, CardColor.Ninguno, CardType.Mas4));
             }
 
             Random rnd = new Random();
@@ -123,7 +123,7 @@ namespace UnoGame
         {
             descarte.Push(cartaJugada);
 
-            if (cartaJugada.Type == CardType.Comodin || cartaJugada.Type == CardType.ComodinMas4)
+            if (cartaJugada.Type == CardType.Comodin || cartaJugada.Type == CardType.Mas4)
                 colorActivo = colorElegido;
             else
  
@@ -146,6 +146,17 @@ namespace UnoGame
                 }
                 AvanzarTurno();
             }
+            if (cartaJugada.Type == CardType.Mas4)
+            {
+                int siguienteJugador = (turno + sentido + numJugadores) % numJugadores;
+                for (int i = 0; i < 4; i++)
+                {
+                    Card cartaRobada = SacarCarta();
+                    if (cartaRobada != null)
+                        manosJugadores[siguienteJugador].Add(cartaRobada);
+                }
+                AvanzarTurno();
+            }
 
             AvanzarTurno();
             
@@ -155,7 +166,7 @@ namespace UnoGame
             Card ultimaCarta = VerCartaSuperior();
          
 
-            if (cartaJugada.Type == CardType.Comodin || cartaJugada.Type == CardType.ComodinMas4)
+            if (cartaJugada.Type == CardType.Comodin || cartaJugada.Type == CardType.Mas4)
                 return true;
             CardColor colorenjuego = (ultimaCarta.Color == CardColor.Ninguno) ? colorActivo : ultimaCarta.Color;
             if (cartaJugada.Color == colorenjuego)
@@ -247,7 +258,7 @@ namespace UnoGame
                 if (JugadaValida(cartaElegida))
                 {
                     CardColor colorElegido = CardColor.Ninguno;
-                    if (cartaElegida.Type == CardType.Comodin || cartaElegida.Type == CardType.ComodinMas4)
+                    if (cartaElegida.Type == CardType.Comodin || cartaElegida.Type == CardType.Mas4)
                         colorElegido = PedirColor();
 
                     manoActual.Remove(cartaElegida);
@@ -277,7 +288,7 @@ namespace UnoGame
             if (JugadaValida(cartaRobada))
             {
                 CardColor colorElegido = CardColor.Ninguno;
-                if (cartaRobada.Type == CardType.Comodin || cartaRobada.Type == CardType.ComodinMas4)
+                if (cartaRobada.Type == CardType.Comodin || cartaRobada.Type == CardType.Mas4)
                     colorElegido = PedirColor();
 
                 MessageBox.Show($"{nombreJugadorActual} robó {cartaRobada} y se jugó automáticamente.");
@@ -364,7 +375,7 @@ namespace UnoGame
             ultimaCarta = SacarCarta();
 
             // Si la primera carta es Comodín +4, se devuelve al mazo, se barajea junto con lo que queda y se voltea otra
-            while (ultimaCarta != null && ultimaCarta.Type == CardType.ComodinMas4)
+            while (ultimaCarta != null && ultimaCarta.Type == CardType.Mas4)
             {
                 DevolverYBarajar(ultimaCarta);
                 ultimaCarta = SacarCarta();
@@ -416,7 +427,7 @@ namespace UnoGame
     }
 
     public enum CardColor { Rojo, Azul, Verde, Amarillo, Ninguno };
-    public enum CardType { Numero, Salta, Reversa, Mas2, Comodin, ComodinMas4 };
+    public enum CardType { Numero, Salta, Reversa, Mas2, Comodin, Mas4 };
 
     public class Card
     {
@@ -443,7 +454,7 @@ namespace UnoGame
                     return $"{Color} Reversa";
                 case CardType.Mas2:
                     return $"{Color} +2";
-                case CardType.ComodinMas4:
+                case CardType.Mas4:
                     return "Comodin +4";
                 case CardType.Comodin:
                     return "Comodin";
