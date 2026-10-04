@@ -61,7 +61,6 @@ namespace UnoGame
         void MostrarTurno(int t)
         {
             richTextBox1.Text = "Turno de: " + jugadores[t].Nombre;
-            ActualizarBotonUno();
         }
 
 
@@ -223,7 +222,6 @@ namespace UnoGame
         private void TerminarPartida(Player ganador)
         {
             partidaTerminada = true;
-            botonUno.Visible = false;
 
             MessageBox.Show($"¡{ganador.Nombre} ganó la partida!", "Fin de la partida");
             richTextBox1.Text = $"Partida terminada. Ganador: {ganador.Nombre}";
@@ -242,6 +240,19 @@ namespace UnoGame
 
             List<Card> manoActual = manosJugadores[turno];
             string nombreJugadorActual = jugadores[turno].Nombre;
+
+            if (manoActual.Count == 2 && !jugadores[turno].DijoUno)
+            {
+                DialogResult respuesta = MessageBox.Show(
+                    $"{nombreJugadorActual}, tienes 2 cartas. ¿Quieres decir UNO antes de jugar?",
+                    "¡UNO!", MessageBoxButtons.YesNo);
+
+                if (respuesta == DialogResult.Yes)
+                {
+                    CallUno(jugadores[turno]);
+                    MessageBox.Show($"{nombreJugadorActual} dijo UNO.");
+                }
+            }
 
             while (true)
             {
@@ -390,8 +401,6 @@ namespace UnoGame
         private void RepartirCartas()
         {
             partidaTerminada = false;
-            if (botonUno != null)
-                botonUno.Visible = false;
 
             Cartas1.Clear();
             Cartas2.Clear();
@@ -418,7 +427,6 @@ namespace UnoGame
             descarte.Clear();
             descarte.Push(ultimaCarta);
             colorActivo = ultimaCarta.Color;
-            ActualizarBotonUno();
         }
 
         private void DevolverYBarajar(Card carta)
@@ -459,19 +467,6 @@ namespace UnoGame
         private void button2_Click(object sender, EventArgs e)
         {
             JugarTurno();
-        }
-
-        private void botonUno_Click(object sender, EventArgs e)
-        {
-            CallUno(jugadores[turno]);
-            if (jugadores[turno].DijoUno)
-            {
-                MessageBox.Show($"{jugadores[turno].Nombre} dijo UNO.");
-                botonUno.Visible = false;
-            }
-                
-            else
-                MessageBox.Show("Solo puedes decir UNO cuando tienes 2 cartas, antes de jugar la penúltima.");
         }
     }
 
