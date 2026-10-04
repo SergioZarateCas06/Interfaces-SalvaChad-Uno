@@ -32,14 +32,6 @@ namespace UnoGame
         public Form1()
         {
             InitializeComponent();
-            botonUno = new Button();
-            botonUno.Text = "UNO";
-            botonUno.Size = new Size(80, 40);
-            botonUno.Location = new Point(20, 20);
-            botonUno.Click += botonUno_Click;
-            botonUno.Visible = false;
-            Controls.Add(botonUno);
-            botonUno.BringToFront();
 
             jugadores.Add(new Player("Jugador 1", Cartas1));
             jugadores.Add(new Player("Jugador 2", Cartas2));
