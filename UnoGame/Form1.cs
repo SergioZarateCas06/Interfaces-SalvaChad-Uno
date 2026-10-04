@@ -79,12 +79,6 @@ namespace UnoGame
             jugador.callUno();
         }
 
-        void ActualizarBotonUno()
-        {
-            if (botonUno != null)
-                botonUno.Visible = jugadores[turno].cantidad_cartas == 2;
-        }
-
         void InvertirSentido()
         {
             sentido = -sentido;
