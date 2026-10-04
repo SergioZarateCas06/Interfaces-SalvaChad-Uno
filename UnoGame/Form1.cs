@@ -26,6 +26,8 @@ namespace UnoGame
         List<Card>[] manosJugadores;
         Button botonUno;
         public event Action<int> TurnoCambiado;
+        public event Action<Player> PartidaTerminada;
+        private bool partidaTerminada = false;
 
         public Form1()
         {
