@@ -404,6 +404,10 @@ namespace UnoGame
         }
         private void RepartirCartas()
         {
+            partidaTerminada = false;
+            if (botonUno != null)
+                botonUno.Visible = false;
+
             Cartas1.Clear();
             Cartas2.Clear();
             Cartas3.Clear();
