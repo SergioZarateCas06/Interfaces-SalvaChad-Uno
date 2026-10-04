@@ -24,7 +24,6 @@ namespace UnoGame
         List<Card> Cartas4 = new List<Card>();
         List<Player> jugadores = new List<Player>();
         List<Card>[] manosJugadores;
-        Button botonUno;
         public event Action<int> TurnoCambiado;
         public event Action<Player> PartidaTerminada;
         private bool partidaTerminada = false;
