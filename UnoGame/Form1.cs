@@ -234,6 +234,19 @@ namespace UnoGame
             }
         }
 
+
+        private void TerminarPartida(Player ganador)
+        {
+            partidaTerminada = true;
+            botonUno.Visible = false;
+
+            MessageBox.Show($"¡{ganador.Nombre} ganó la partida!", "Fin de la partida");
+            richTextBox1.Text = $"Partida terminada. Ganador: {ganador.Nombre}";
+
+            if (PartidaTerminada != null)
+                PartidaTerminada.Invoke(ganador);
+        }
+
         private void JugarTurno()
         {
             List<Card> manoActual = manosJugadores[turno];
