@@ -145,6 +145,12 @@ namespace UnoGame
         }
         private void JugarCarta(Card cartaJugada, CardColor colorElegido = CardColor.Ninguno)
         {
+            if (partidaTerminada)
+            {
+                MessageBox.Show("La partida ya terminó.");
+                return;
+            }
+
             if (!JugadaValida(cartaJugada))
             {
                 MessageBox.Show("La jugada no es valida");
@@ -154,42 +160,18 @@ namespace UnoGame
 
             descarte.Push(cartaJugada);
             jugadores[turno].Quitar_carta(cartaJugada);
+
+            if (jugadores[turno].cantidad_cartas == 0)
+            {
+                TerminarPartida(jugadores[turno]);
+                return;
+            }
+
             if (jugadores[turno].cantidad_cartas == 1 && !jugadores[turno].DijoUno)
             {
                 MessageBox.Show($"{jugadores[turno].Nombre} no dijo UNO a tiempo. ¡Penalización de 2 cartas!");
                 for (int i = 0; i < 2; i++)
-                jugadores[turno].Agregar_carta(SacarCarta());
-            }
-
-            if (cartaJugada.Type == CardType.Comodin || cartaJugada.Type == CardType.Mas4)
-                colorActivo = colorElegido;
-            else
- 
-                colorActivo = cartaJugada.Color;
-
-            if (cartaJugada.Type == CardType.Reversa)
-                InvertirSentido();
-
-            if (cartaJugada.Type == CardType.Salta)
-                AvanzarTurno();
-
-            if (cartaJugada.Type == CardType.Mas2)
-            {
-                int siguienteJugador = (turno + sentido + numJugadores) % numJugadores;
-                for (int i = 0; i < 2; i++)
-                {
-                    jugadores[siguienteJugador].Agregar_carta(SacarCarta());
-                }
-                AvanzarTurno();
-            }
-            if (cartaJugada.Type == CardType.Mas4)
-            {
-                int siguienteJugador = (turno + sentido + numJugadores) % numJugadores;
-                for (int i = 0; i < 4; i++)
-                {
-                    jugadores[siguienteJugador].Agregar_carta(SacarCarta());
-                }
-                AvanzarTurno();
+                    jugadores[turno].Agregar_carta(SacarCarta());
             }
 
             AvanzarTurno();
