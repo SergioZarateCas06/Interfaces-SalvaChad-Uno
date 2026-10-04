@@ -24,20 +24,13 @@ namespace UnoGame
         List<Card> Cartas4 = new List<Card>();
         List<Player> jugadores = new List<Player>();
         List<Card>[] manosJugadores;
-        Button botonUno;
         public event Action<int> TurnoCambiado;
+        public event Action<Player> PartidaTerminada;
+        private bool partidaTerminada = false;
 
         public Form1()
         {
             InitializeComponent();
-            botonUno = new Button();
-            botonUno.Text = "UNO";
-            botonUno.Size = new Size(80, 40);
-            botonUno.Location = new Point(20, 20);
-            botonUno.Click += botonUno_Click;
-            botonUno.Visible = false;
-            Controls.Add(botonUno);
-            botonUno.BringToFront();
 
             jugadores.Add(new Player("Jugador 1", Cartas1));
             jugadores.Add(new Player("Jugador 2", Cartas2));
@@ -68,7 +61,6 @@ namespace UnoGame
         void MostrarTurno(int t)
         {
             richTextBox1.Text = "Turno de: " + jugadores[t].Nombre;
-            ActualizarBotonUno();
         }
 
 
@@ -84,12 +76,6 @@ namespace UnoGame
         void CallUno(Player jugador)
         {
             jugador.callUno();
-        }
-
-        void ActualizarBotonUno()
-        {
-            if (botonUno != null)
-                botonUno.Visible = jugadores[turno].cantidad_cartas == 2;
         }
 
         void InvertirSentido()
@@ -143,6 +129,12 @@ namespace UnoGame
         }
         private void JugarCarta(Card cartaJugada, CardColor colorElegido = CardColor.Ninguno)
         {
+            if (partidaTerminada)
+            {
+                MessageBox.Show("La partida ya terminó.");
+                return;
+            }
+
             if (!JugadaValida(cartaJugada))
             {
                 MessageBox.Show("La jugada no es valida");
@@ -152,42 +144,18 @@ namespace UnoGame
 
             descarte.Push(cartaJugada);
             jugadores[turno].Quitar_carta(cartaJugada);
+
+            if (jugadores[turno].cantidad_cartas == 0)
+            {
+                TerminarPartida(jugadores[turno]);
+                return;
+            }
+
             if (jugadores[turno].cantidad_cartas == 1 && !jugadores[turno].DijoUno)
             {
                 MessageBox.Show($"{jugadores[turno].Nombre} no dijo UNO a tiempo. ¡Penalización de 2 cartas!");
                 for (int i = 0; i < 2; i++)
-                jugadores[turno].Agregar_carta(SacarCarta());
-            }
-
-            if (cartaJugada.Type == CardType.Comodin || cartaJugada.Type == CardType.Mas4)
-                colorActivo = colorElegido;
-            else
- 
-                colorActivo = cartaJugada.Color;
-
-            if (cartaJugada.Type == CardType.Reversa)
-                InvertirSentido();
-
-            if (cartaJugada.Type == CardType.Salta)
-                AvanzarTurno();
-
-            if (cartaJugada.Type == CardType.Mas2)
-            {
-                int siguienteJugador = (turno + sentido + numJugadores) % numJugadores;
-                for (int i = 0; i < 2; i++)
-                {
-                    jugadores[siguienteJugador].Agregar_carta(SacarCarta());
-                }
-                AvanzarTurno();
-            }
-            if (cartaJugada.Type == CardType.Mas4)
-            {
-                int siguienteJugador = (turno + sentido + numJugadores) % numJugadores;
-                for (int i = 0; i < 4; i++)
-                {
-                    jugadores[siguienteJugador].Agregar_carta(SacarCarta());
-                }
-                AvanzarTurno();
+                    jugadores[turno].Agregar_carta(SacarCarta());
             }
 
             AvanzarTurno();
@@ -250,10 +218,41 @@ namespace UnoGame
             }
         }
 
+
+        private void TerminarPartida(Player ganador)
+        {
+            partidaTerminada = true;
+
+            MessageBox.Show($"¡{ganador.Nombre} ganó la partida!", "Fin de la partida");
+            richTextBox1.Text = $"Partida terminada. Ganador: {ganador.Nombre}";
+
+            if (PartidaTerminada != null)
+                PartidaTerminada.Invoke(ganador);
+        }
+
         private void JugarTurno()
         {
+            if (partidaTerminada)
+            {
+                MessageBox.Show("La partida ya terminó. Inicia una nueva partida para seguir jugando.");
+                return;
+            }
+
             List<Card> manoActual = manosJugadores[turno];
             string nombreJugadorActual = jugadores[turno].Nombre;
+
+            if (manoActual.Count == 2 && !jugadores[turno].DijoUno)
+            {
+                DialogResult respuesta = MessageBox.Show(
+                    $"{nombreJugadorActual}, tienes 2 cartas. ¿Quieres decir UNO antes de jugar?",
+                    "¡UNO!", MessageBoxButtons.YesNo);
+
+                if (respuesta == DialogResult.Yes)
+                {
+                    CallUno(jugadores[turno]);
+                    MessageBox.Show($"{nombreJugadorActual} dijo UNO.");
+                }
+            }
 
             while (true)
             {
@@ -401,6 +400,8 @@ namespace UnoGame
         }
         private void RepartirCartas()
         {
+            partidaTerminada = false;
+
             Cartas1.Clear();
             Cartas2.Clear();
             Cartas3.Clear();
@@ -426,7 +427,6 @@ namespace UnoGame
             descarte.Clear();
             descarte.Push(ultimaCarta);
             colorActivo = ultimaCarta.Color;
-            ActualizarBotonUno();
         }
 
         private void DevolverYBarajar(Card carta)
@@ -467,19 +467,6 @@ namespace UnoGame
         private void button2_Click(object sender, EventArgs e)
         {
             JugarTurno();
-        }
-
-        private void botonUno_Click(object sender, EventArgs e)
-        {
-            CallUno(jugadores[turno]);
-            if (jugadores[turno].DijoUno)
-            {
-                MessageBox.Show($"{jugadores[turno].Nombre} dijo UNO.");
-                botonUno.Visible = false;
-            }
-                
-            else
-                MessageBox.Show("Solo puedes decir UNO cuando tienes 2 cartas, antes de jugar la penúltima.");
         }
     }
 
