@@ -249,6 +249,12 @@ namespace UnoGame
 
         private void JugarTurno()
         {
+            if (partidaTerminada)
+            {
+                MessageBox.Show("La partida ya terminó. Inicia una nueva partida para seguir jugando.");
+                return;
+            }
+
             List<Card> manoActual = manosJugadores[turno];
             string nombreJugadorActual = jugadores[turno].Nombre;
 
