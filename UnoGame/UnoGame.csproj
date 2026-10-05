@@ -56,10 +56,25 @@
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
+    <Compile Include="FormHistorial.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormHistorial.Designer.cs">
+      <DependentUpon>FormHistorial.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FormMenu.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormMenu.Designer.cs">
+      <DependentUpon>FormMenu.cs</DependentUpon>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormMenu.resx">
+      <DependentUpon>FormMenu.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -69,6 +84,7 @@
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
     </Compile>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -82,6 +98,42 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ImagenBotonSalir.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ImagenBotonHistorial.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ImagenBotonNuevaPartida.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ImagenBotonHistorial1.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ImagenBotonNuevaPartida1.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ImagenBotonSalir1.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ImagenBotonHistorial2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ImagenBotonNuevaPartida2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ImagenBotonSalir2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\fondomenu.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ImagenBotonHistorial %281%29.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ImagenBotonHistorial3.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
