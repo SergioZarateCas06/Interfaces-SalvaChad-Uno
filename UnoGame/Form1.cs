@@ -82,17 +82,131 @@ namespace UnoGame
 
         void ActualizarVista()
         {
-            label_jugador1.Text = jugadores[0].Nombre + ": " + jugadores[0].cantidad_cartas + " cartas";
-            label_jugador2.Text = jugadores[1].Nombre + ": " + jugadores[1].cantidad_cartas + " cartas";
-            label_jugador3.Text = jugadores[2].Nombre + ": " + jugadores[2].cantidad_cartas + " cartas";
-            label_jugador4.Text = jugadores[3].Nombre + ": " + jugadores[3].cantidad_cartas + " cartas";
+            // La posición visual rota según el turno: el jugador en turno siempre
+            // aparece abajo (su mano real), y los otros 3 se reparten alrededor,
+            // simulando que la mesa gira.
+            int idxIzquierda = (turno + sentido + numJugadores) % numJugadores;
+            int idxArriba = (turno + 2 * sentido + numJugadores) % numJugadores;
+            int idxDerecha = (turno + 3 * sentido + numJugadores) % numJugadores;
 
             labelTurno.Text = "Turno de: " + jugadores[turno].Nombre;
             label_Mano_jugador.Text = "Mano de: " + jugadores[turno].Nombre;
             labelBurra.Text = "Burra: " + CartasRestantes();
 
+            panel_mano_jugador1.Text = jugadores[idxArriba].Nombre;
+            label_jugador2.Text = jugadores[idxIzquierda].Nombre;
+            label_jugador3.Text = jugadores[idxDerecha].Nombre;
+
             Card sup = VerCartaSuperior();
-            labelDescarte.Text = "Descarte: " + descarte.Count + " cartas\n" + (sup != null ? sup.ToString() : "vacío");
+            labelDescarte.Text = "Descarte: " + descarte.Count + " cartas";
+
+            MostrarManoJugador();
+            MostrarDescarte();
+            MostrarBurra();
+            MostrarRival(panel_rival_arriba, idxArriba);
+            MostrarRival(panel_rival_izquierda, idxIzquierda);
+            MostrarRival(panel_rival_derecha, idxDerecha);
+        }
+
+        private void MostrarRival(Panel panel, int indiceJugador)
+        {
+            panel.Controls.Clear();
+            int cantidad = jugadores[indiceJugador].cantidad_cartas;
+
+            int x = 5;
+            for (int i = 0; i < cantidad; i++)
+            {
+                CartaControl cc = new CartaControl();
+                cc.BocaAbajo = true;
+                cc.Size = new Size(40, 60); // más chicas para que quepan varias
+                cc.Location = new Point(x, 5);
+                panel.Controls.Add(cc);
+                cc.BringToFront();
+                x += 15; // se van sobreponiendo, como un abanico
+            }
+        }
+
+        private void MostrarManoJugador()
+        {
+            panel_mano_jugador1.Controls.Clear();
+            List<Card> mano = manosJugadores[turno];
+
+            int x = 10;
+            foreach (Card carta in mano)
+            {
+                CartaControl cc = new CartaControl();
+                cc.Carta = carta;
+                cc.BocaAbajo = false;
+                cc.EsJugable = JugadaValida(carta);
+                cc.Location = new Point(x, 10);
+
+                Card cartaCapturada = carta; // evita el problema de captura en el foreach
+                cc.Click += (s, e) => IntentarJugarCarta(cartaCapturada);
+
+                panel_mano_jugador1.Controls.Add(cc);
+                x += 75;
+            }
+        }
+
+        private void MostrarDescarte()
+        {
+            panelDescarte.Controls.Clear();
+            Card sup = VerCartaSuperior();
+            if (sup != null)
+            {
+                CartaControl cc = new CartaControl();
+                cc.Carta = sup;
+                cc.BocaAbajo = false;
+                cc.Location = new Point(5, 5);
+                panelDescarte.Controls.Add(cc);
+            }
+        }
+
+        private void MostrarBurra()
+        {
+            panelBurra.Controls.Clear();
+            if (!partidaTerminada && CartasRestantes() > 0)
+            {
+                CartaControl cc = new CartaControl();
+                cc.BocaAbajo = true;
+                cc.Location = new Point(5, 5);
+                cc.Click += (s, e) => TomarCartaYIntentarJugar(jugadores[turno].Nombre);
+                panelBurra.Controls.Add(cc);
+            }
+        }
+
+        private void IntentarJugarCarta(Card cartaElegida)
+        {
+            if (partidaTerminada)
+            {
+                MessageBox.Show("La partida ya terminó.");
+                return;
+            }
+
+            if (manosJugadores[turno].Count == 2 && !jugadores[turno].DijoUno)
+            {
+                DialogResult respuesta = MessageBox.Show(
+                    $"{jugadores[turno].Nombre}, tienes 2 cartas. ¿Quieres decir UNO antes de jugar?",
+                    "¡UNO!", MessageBoxButtons.YesNo);
+
+                if (respuesta == DialogResult.Yes)
+                {
+                    CallUno(jugadores[turno]);
+                    MessageBox.Show($"{jugadores[turno].Nombre} dijo UNO.");
+                }
+            }
+
+            if (!JugadaValida(cartaElegida))
+            {
+                MessageBox.Show("Esa carta no es una jugada válida.");
+                return;
+            }
+
+            CardColor colorElegido = CardColor.Ninguno;
+            if (cartaElegida.Type == CardType.Comodin || cartaElegida.Type == CardType.Mas4)
+                colorElegido = PedirColor();
+
+            JugarCarta(cartaElegida, colorElegido);
         }
         void CallUno(Player jugador)
         {
@@ -179,8 +293,39 @@ namespace UnoGame
                     jugadores[turno].Agregar_carta(SacarCarta());
             }
 
+            if (cartaJugada.Type == CardType.Comodin || cartaJugada.Type == CardType.Mas4)
+                colorActivo = colorElegido;
+            else
+                colorActivo = cartaJugada.Color;
+
+            if (cartaJugada.Type == CardType.Reversa)
+                InvertirSentido();
+
+            if (cartaJugada.Type == CardType.Salta)
+                AvanzarTurno();
+
+            if (cartaJugada.Type == CardType.Mas2)
+            {
+                int siguienteJugador = (turno + sentido + numJugadores) % numJugadores;
+                for (int i = 0; i < 2; i++)
+                {
+                    jugadores[siguienteJugador].Agregar_carta(SacarCarta());
+                }
+                AvanzarTurno();
+            }
+
+            if (cartaJugada.Type == CardType.Mas4)
+            {
+                int siguienteJugador = (turno + sentido + numJugadores) % numJugadores;
+                for (int i = 0; i < 4; i++)
+                {
+                    jugadores[siguienteJugador].Agregar_carta(SacarCarta());
+                }
+                AvanzarTurno();
+            }
+
             AvanzarTurno();
-            
+
         }
         public bool JugadaValida(Card cartaJugada)
         {
@@ -330,6 +475,12 @@ namespace UnoGame
 
         private void TomarCartaYIntentarJugar(string nombreJugadorActual)
         {
+            if (partidaTerminada)
+            {
+                MessageBox.Show("La partida ya terminó.");
+                return;
+            }
+
             Card cartaRobada = SacarCarta();
 
             if (cartaRobada == null)
@@ -485,6 +636,16 @@ namespace UnoGame
         }
 
         private void Form1_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void cartaControl1_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void panel_mano_jugador1_Paint(object sender, PaintEventArgs e)
         {
 
         }
