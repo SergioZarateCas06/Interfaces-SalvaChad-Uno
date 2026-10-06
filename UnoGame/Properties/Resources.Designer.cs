@@ -63,16 +63,6 @@ namespace UnoGame.Properties {
         /// <summary>
         ///   Busca un recurso adaptado de tipo System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap asdasdasdasdasd_Photoroom1 {
-            get {
-                object obj = ResourceManager.GetObject("asdasdasdasdasd-Photoroom1", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Busca un recurso adaptado de tipo System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap campoamarillo {
             get {
                 object obj = ResourceManager.GetObject("campoamarillo", resourceCulture);

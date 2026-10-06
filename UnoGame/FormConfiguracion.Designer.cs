@@ -105,7 +105,7 @@
             // pictureBox9
             // 
             this.pictureBox9.BackColor = System.Drawing.Color.Transparent;
-            this.pictureBox9.Image = global::UnoGame.Properties.Resources.WhatsApp_Image_2026_10_06_at_10_22_58_AM;
+            this.pictureBox9.Image = global::UnoGame.Properties.Resources.nombreJugador3;
             this.pictureBox9.Location = new System.Drawing.Point(281, 217);
             this.pictureBox9.Name = "pictureBox9";
             this.pictureBox9.Size = new System.Drawing.Size(261, 56);
@@ -127,7 +127,7 @@
             // pictureBox7
             // 
             this.pictureBox7.BackColor = System.Drawing.Color.Transparent;
-            this.pictureBox7.Image = global::UnoGame.Properties.Resources.asdasdasd_Photoroom;
+            this.pictureBox7.Image = global::UnoGame.Properties.Resources.NombreJugador1;
             this.pictureBox7.Location = new System.Drawing.Point(281, 12);
             this.pictureBox7.Name = "pictureBox7";
             this.pictureBox7.Size = new System.Drawing.Size(261, 54);
@@ -139,7 +139,7 @@
             // pictureBox6
             // 
             this.pictureBox6.BackColor = System.Drawing.Color.Transparent;
-            this.pictureBox6.Image = global::UnoGame.Properties.Resources.asdasdasdasdasd_Photoroom1;
+            this.pictureBox6.Image = global::UnoGame.Properties.Resources.nombreJugador4;
             this.pictureBox6.Location = new System.Drawing.Point(281, 325);
             this.pictureBox6.Name = "pictureBox6";
             this.pictureBox6.Size = new System.Drawing.Size(261, 54);
