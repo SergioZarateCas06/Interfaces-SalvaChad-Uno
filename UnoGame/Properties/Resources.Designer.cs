@@ -63,26 +63,6 @@ namespace UnoGame.Properties {
         /// <summary>
         ///   Busca un recurso adaptado de tipo System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap asdasdasd_Photoroom {
-            get {
-                object obj = ResourceManager.GetObject("asdasdasd-Photoroom", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Busca un recurso adaptado de tipo System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap asdasdasdasdasd_Photoroom {
-            get {
-                object obj = ResourceManager.GetObject("asdasdasdasdasd-Photoroom", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Busca un recurso adaptado de tipo System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap asdasdasdasdasd_Photoroom1 {
             get {
                 object obj = ResourceManager.GetObject("asdasdasdasdasd-Photoroom1", resourceCulture);
@@ -223,9 +203,9 @@ namespace UnoGame.Properties {
         /// <summary>
         ///   Busca un recurso adaptado de tipo System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap Whatasdjkaslkdjasd {
+        internal static System.Drawing.Bitmap NombreJugador1 {
             get {
-                object obj = ResourceManager.GetObject("Whatasdjkaslkdjasd", resourceCulture);
+                object obj = ResourceManager.GetObject("NombreJugador1", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -233,9 +213,29 @@ namespace UnoGame.Properties {
         /// <summary>
         ///   Busca un recurso adaptado de tipo System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap WhatsApp_Image_2026_10_06_at_10_22_58_AM {
+        internal static System.Drawing.Bitmap nombreJugador2 {
             get {
-                object obj = ResourceManager.GetObject("WhatsApp Image 2026-10-06 at 10.22.58 AM", resourceCulture);
+                object obj = ResourceManager.GetObject("nombreJugador2", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Busca un recurso adaptado de tipo System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap nombreJugador3 {
+            get {
+                object obj = ResourceManager.GetObject("nombreJugador3", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Busca un recurso adaptado de tipo System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap nombreJugador4 {
+            get {
+                object obj = ResourceManager.GetObject("nombreJugador4", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

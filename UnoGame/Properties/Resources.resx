@@ -121,7 +121,7 @@
   <data name="camporojo" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\camporojo.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Whatasdjkaslkdjasd" type="System.Resources.ResXFileRef, System.Windows.Forms">
+  <data name="nombreJugador2" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Whatasdjkaslkdjasd.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="campoazul2" type="System.Resources.ResXFileRef, System.Windows.Forms">
@@ -136,7 +136,7 @@
   <data name="campoazul" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\campoazul.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="asdasdasd-Photoroom" type="System.Resources.ResXFileRef, System.Windows.Forms">
+  <data name="NombreJugador1" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\asdasdasd-Photoroom.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="fondo_juego_11" type="System.Resources.ResXFileRef, System.Windows.Forms">
@@ -154,7 +154,7 @@
   <data name="fondomenu" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\fondomenu.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="asdasdasdasdasd-Photoroom" type="System.Resources.ResXFileRef, System.Windows.Forms">
+  <data name="nombreJugador4" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\asdasdasdasdasd-Photoroom.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="fondo_juego_1" type="System.Resources.ResXFileRef, System.Windows.Forms">
@@ -169,7 +169,7 @@
   <data name="campoamarillo" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\campoamarillo.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="WhatsApp Image 2026-10-06 at 10.22.58 AM" type="System.Resources.ResXFileRef, System.Windows.Forms">
+  <data name="nombreJugador3" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\WhatsApp Image 2026-10-06 at 10.22.58 AM.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>

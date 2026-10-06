@@ -116,7 +116,7 @@
             // pictureBox8
             // 
             this.pictureBox8.BackColor = System.Drawing.Color.Transparent;
-            this.pictureBox8.Image = global::UnoGame.Properties.Resources.Whatasdjkaslkdjasd;
+            this.pictureBox8.Image = global::UnoGame.Properties.Resources.nombreJugador2;
             this.pictureBox8.Location = new System.Drawing.Point(281, 116);
             this.pictureBox8.Name = "pictureBox8";
             this.pictureBox8.Size = new System.Drawing.Size(261, 56);
