@@ -21,17 +21,28 @@ namespace UnoGame
             pictureBox1.SizeMode = PictureBoxSizeMode.StretchImage;
             pictureBox2.Image = Properties.Resources.campoazul;
             pictureBox2.SizeMode = PictureBoxSizeMode.StretchImage;
-            richTextBox2.BringToFront();
             pictureBox3.Image = Properties.Resources.campoverde;
             pictureBox3.SizeMode = PictureBoxSizeMode.StretchImage;
-            richTextBox3.BringToFront();
             pictureBox4.Image = Properties.Resources.campoamarillo;
             pictureBox4.SizeMode = PictureBoxSizeMode.StretchImage;
-            richTextBox4.BringToFront();
-
         }
 
         private void pictureBox1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void pictureBox6_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void richTextBox3_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void pictureBox7_Click(object sender, EventArgs e)
         {
 
         }

@@ -171,5 +171,20 @@
   <ItemGroup>
     <None Include="Resources\fondo_juego_11.jpg" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\asdasdasdasdasd-Photoroom.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\asdasdasdasdasd-Photoroom1.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\asdasdasd-Photoroom.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Whatasdjkaslkdjasd.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\WhatsApp Image 2026-10-06 at 10.22.58 AM.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
