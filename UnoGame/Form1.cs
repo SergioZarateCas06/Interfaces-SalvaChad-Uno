@@ -11,6 +11,7 @@ namespace UnoGame
 {
     public partial class Form1 : Form
     {
+        String jugador1, jugador2, jugador3, jugador4;
         int numJugadores = 4;
         Card ultimaCarta;
         int turno = 0;
@@ -28,8 +29,13 @@ namespace UnoGame
         public event Action<Player> PartidaTerminada;
         private bool partidaTerminada = false;
 
-        public Form1()
+        public Form1(String j1, String j2, String j3, String j4)
         {
+            jugador1 = j1;
+            jugador2 = j2;
+            jugador3 = j3;
+            jugador4 = j4;
+
             InitializeComponent();
 
             jugadores.Add(new Player("Jugador 1", Cartas1));

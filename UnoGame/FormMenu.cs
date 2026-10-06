@@ -20,7 +20,7 @@ namespace UnoGame
         private void pbNuevaPartida_Click(object sender, EventArgs e)
         {
             this.Hide();
-            Form1 juego = new Form1();
+            FormConfiguracion juego = new FormConfiguracion();
             juego.ShowDialog();
             this.Show();
         }
