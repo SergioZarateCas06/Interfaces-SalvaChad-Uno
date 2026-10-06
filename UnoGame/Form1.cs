@@ -38,10 +38,10 @@ namespace UnoGame
 
             InitializeComponent();
 
-            jugadores.Add(new Player("Jugador 1", Cartas1));
-            jugadores.Add(new Player("Jugador 2", Cartas2));
-            jugadores.Add(new Player("Jugador 3", Cartas3));
-            jugadores.Add(new Player("Jugador 4", Cartas4));
+            jugadores.Add(new Player(jugador1, Cartas1));
+            jugadores.Add(new Player(jugador2, Cartas2));
+            jugadores.Add(new Player(jugador3, Cartas3));
+            jugadores.Add(new Player(jugador4, Cartas4));
             manosJugadores = new List<Card>[] { Cartas1, Cartas2, Cartas3, Cartas4 };
             TurnoCambiado += MostrarTurno;
             RepartirCartas();
@@ -67,6 +67,7 @@ namespace UnoGame
         void MostrarTurno(int t)
         {
             richTextBox1.Text = "Turno de: " + jugadores[t].Nombre;
+            ActualizarVista();
         }
 
 
@@ -79,6 +80,20 @@ namespace UnoGame
             }
         }
 
+        void ActualizarVista()
+        {
+            label_jugador1.Text = jugadores[0].Nombre + ": " + jugadores[0].cantidad_cartas + " cartas";
+            label_jugador2.Text = jugadores[1].Nombre + ": " + jugadores[1].cantidad_cartas + " cartas";
+            label_jugador3.Text = jugadores[2].Nombre + ": " + jugadores[2].cantidad_cartas + " cartas";
+            label_jugador4.Text = jugadores[3].Nombre + ": " + jugadores[3].cantidad_cartas + " cartas";
+
+            labelTurno.Text = "Turno de: " + jugadores[turno].Nombre;
+            label_Mano_jugador.Text = "Mano de: " + jugadores[turno].Nombre;
+            labelBurra.Text = "Burra: " + CartasRestantes();
+
+            Card sup = VerCartaSuperior();
+            labelDescarte.Text = "Descarte: " + descarte.Count + " cartas\n" + (sup != null ? sup.ToString() : "vacío");
+        }
         void CallUno(Player jugador)
         {
             jugador.callUno();
@@ -234,6 +249,8 @@ namespace UnoGame
 
             if (PartidaTerminada != null)
                 PartidaTerminada.Invoke(ganador);
+
+            ActualizarVista();
         }
 
         private void JugarTurno()
@@ -433,6 +450,7 @@ namespace UnoGame
             descarte.Clear();
             descarte.Push(ultimaCarta);
             colorActivo = ultimaCarta.Color;
+            ActualizarVista();
         }
 
         private void DevolverYBarajar(Card carta)
@@ -459,6 +477,16 @@ namespace UnoGame
         {
             BarajarMazo();
             richTextBox1.Text = string.Join(", ", burra.Select(c => c.ToString()));
+        }
+
+        private void labelBurra_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+
         }
 
         private void Avanzar_turno_Click(object sender, EventArgs e)

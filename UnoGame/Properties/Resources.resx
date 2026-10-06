@@ -127,6 +127,9 @@
   <data name="ImagenBotonSalir1" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\ImagenBotonSalir2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="ImageBotonjugar" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ImageBotonjugar.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="ImagenBotonNuevaPartida1" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\ImagenBotonNuevaPartida2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -148,7 +151,10 @@
   <data name="campoazul2" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\campoazul2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="ImageBotonjugar" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\ImageBotonjugar.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="fondo_juego_1" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\fondo_juego_1.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="fondo_juego_11" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\fondo_juego_11.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>
