@@ -115,24 +115,6 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\ImagenBotonSalir.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\ImagenBotonHistorial.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\ImagenBotonNuevaPartida.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\ImagenBotonHistorial1.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\ImagenBotonNuevaPartida1.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\ImagenBotonSalir1.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\ImagenBotonHistorial2.png" />
   </ItemGroup>
   <ItemGroup>
@@ -143,12 +125,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\fondomenu.jpg" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\ImagenBotonHistorial %281%29.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\ImagenBotonHistorial3.png" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\campoazul.png" />
