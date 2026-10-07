@@ -131,6 +131,37 @@ namespace UnoGame
             panel_mano_jugador1.Controls.Clear();
             List<Card> mano = manosJugadores[turno];
 
+            int anchoCarta = 70;
+            int separacion = 75;
+            int separacionMinima = 40;
+
+            int espacioDisponible = panel_mano_jugador1.Width - anchoCarta;
+
+            int separacionReal;
+
+            if(mano.Count > 1)
+            {
+                separacionReal = Math.Min(separacion, espacioDisponible / (mano.Count - 1));
+                if(separacionReal < separacionMinima)
+                {
+                    separacionReal = separacionMinima;
+                }
+            }
+            else
+            {
+                separacionReal = separacion;
+            }
+
+            int anchoTotal = anchoCarta + (mano.Count - 1) * separacionReal;
+            panel_mano_jugador1.AutoScroll = true;
+            if(anchoTotal > panel_mano_jugador1.Width)
+            {
+                panel_mano_jugador1.AutoScrollMinSize = new Size(anchoTotal, 0);
+            }
+            else
+            {
+                panel_mano_jugador1.AutoScrollMinSize = new Size(0, 0);
+            }
             int x = 10;
             foreach (Card carta in mano)
             {
@@ -144,7 +175,7 @@ namespace UnoGame
                 cc.Click += (s, e) => IntentarJugarCarta(cartaCapturada);
 
                 panel_mano_jugador1.Controls.Add(cc);
-                x += 75;
+                x += separacionReal;
             }
         }
 
