@@ -28,7 +28,10 @@ namespace UnoGame
         public event Action<int> TurnoCambiado;
         public event Action<Player> PartidaTerminada;
         private bool partidaTerminada = false;
-
+         Card cartaPendiente = null;
+         bool esCartaRobada = false;
+        Size tamanoOriginalBoton;
+        Point locRojo, locAzul, locAmarillo, locVerde;
         public Form1(String j1, String j2, String j3, String j4)
         {
             jugador1 = j1;
@@ -37,7 +40,9 @@ namespace UnoGame
             jugador4 = j4;
 
             InitializeComponent();
-
+            
+            iniciarTamanoDeBotones();
+            iniciarColoresDeBotones();
             jugadores.Add(new Player(jugador1, Cartas1));
             jugadores.Add(new Player(jugador2, Cartas2));
             jugadores.Add(new Player(jugador3, Cartas3));
@@ -45,6 +50,15 @@ namespace UnoGame
             manosJugadores = new List<Card>[] { Cartas1, Cartas2, Cartas3, Cartas4 };
             TurnoCambiado += MostrarTurno;
             RepartirCartas();
+        }
+        void iniciarTamanoDeBotones()
+        {
+            tamanoOriginalBoton = SeleccionColor_Rojo.Size;
+            locRojo = SeleccionColor_Rojo.Location;
+            locAzul = SeleccionColor_Azul.Location;
+            locAmarillo = SeleccionColor_Amarillo.Location;
+            locVerde = SeleccionColor_Verde.Location;
+
         }
 
         Card SacarCarta()
@@ -63,7 +77,7 @@ namespace UnoGame
             }
             return null;
         }
-
+      
         void MostrarTurno(int t)
         {
             richTextBox1.Text = "Turno de: " + jugadores[t].Nombre;
@@ -243,6 +257,7 @@ namespace UnoGame
 
         private void IntentarJugarCarta(Card cartaElegida)
         {
+            if (cartaPendiente != null) return;
             if (partidaTerminada)
             {
                 MessageBox.Show("La partida ya terminó.");
@@ -268,11 +283,20 @@ namespace UnoGame
                 return;
             }
 
-            CardColor colorElegido = CardColor.Ninguno;
             if (cartaElegida.Type == CardType.Comodin || cartaElegida.Type == CardType.Mas4)
-                colorElegido = PedirColor();
+            {
+                cartaPendiente = cartaElegida;
+                esCartaRobada = false;
+                SeleccionColor_Rojo.Visible = true;
+                SeleccionColor_Azul.Visible = true;
+                SeleccionColor_Amarillo.Visible = true;
+                SeleccionColor_Verde.Visible = true;
 
-            JugarCarta(cartaElegida, colorElegido);
+                return; 
+            }
+
+            // Si es una carta normal, se juega directamente
+            JugarCarta(cartaElegida, CardColor.Ninguno);
         }
         void CallUno(Player jugador)
         {
@@ -330,6 +354,7 @@ namespace UnoGame
         }
         private void JugarCarta(Card cartaJugada, CardColor colorElegido = CardColor.Ninguno)
         {
+            if (cartaPendiente != null) return;
             if (partidaTerminada)
             {
                 MessageBox.Show("La partida ya terminó.");
@@ -466,6 +491,7 @@ namespace UnoGame
 
         private void JugarTurno()
         {
+            if (cartaPendiente != null) return;
             if (partidaTerminada)
             {
                 MessageBox.Show("La partida ya terminó. Inicia una nueva partida para seguir jugando.");
@@ -524,7 +550,15 @@ namespace UnoGame
                 {
                     CardColor colorElegido = CardColor.Ninguno;
                     if (cartaElegida.Type == CardType.Comodin || cartaElegida.Type == CardType.Mas4)
-                        colorElegido = PedirColor();
+                    {
+                        cartaPendiente = cartaElegida;
+                        esCartaRobada = false;
+                        SeleccionColor_Rojo.Visible = true;
+                        SeleccionColor_Azul.Visible = true;
+                        SeleccionColor_Amarillo.Visible = true;
+                        SeleccionColor_Verde.Visible = true;
+                        return;
+                    }
 
 
                     JugarCarta(cartaElegida, colorElegido);
@@ -541,6 +575,7 @@ namespace UnoGame
 
         private void TomarCartaYIntentarJugar(string nombreJugadorActual)
         {
+            if (cartaPendiente != null) return;
             if (partidaTerminada)
             {
                 MessageBox.Show("La partida ya terminó.");
@@ -558,13 +593,22 @@ namespace UnoGame
 
             if (JugadaValida(cartaRobada))
             {
-                CardColor colorElegido = CardColor.Ninguno;
+            
                 if (cartaRobada.Type == CardType.Comodin || cartaRobada.Type == CardType.Mas4)
-                    colorElegido = PedirColor();
+                {
+                    MessageBox.Show($"{nombreJugadorActual} robó un comodín y se jugó automáticamente.");
+                    cartaPendiente = cartaRobada;
+                    esCartaRobada = true;
+                    SeleccionColor_Rojo.Visible = true;
+                    SeleccionColor_Azul.Visible = true;
+                    SeleccionColor_Amarillo.Visible = true;
+                    SeleccionColor_Verde.Visible = true;
+                    return; 
+                }
 
                 MessageBox.Show($"{nombreJugadorActual} robó {cartaRobada} y se jugó automáticamente.");
                 jugadores[turno].Agregar_carta(cartaRobada);
-                JugarCarta(cartaRobada, colorElegido);
+                JugarCarta(cartaRobada, CardColor.Ninguno);
             }
             else
             {
@@ -716,6 +760,140 @@ namespace UnoGame
         {
 
         }
+
+
+
+
+
+
+
+
+
+        private void SeleccionColor_Rojo_MouseEnter(object sender, EventArgs e)
+        {
+            SeleccionColor_Rojo.BackColor = Color.Red;
+            SeleccionColor_Rojo.Size = new Size(tamanoOriginalBoton.Width + 12, tamanoOriginalBoton.Height + 12);
+            SeleccionColor_Rojo.Location = new Point(locRojo.X - 6, locRojo.Y - 6);
+        }
+
+        private void SeleccionColor_Rojo_MouseLeave(object sender, EventArgs e)
+        {
+            SeleccionColor_Rojo.BackColor = Color.FromArgb(180, 40, 40);
+            SeleccionColor_Rojo.Size = tamanoOriginalBoton;
+            SeleccionColor_Rojo.Location = locRojo;
+        }
+
+        private void SeleccionColor_Amarillo_MouseEnter(object sender, EventArgs e)
+        {
+            SeleccionColor_Amarillo.BackColor = Color.Yellow;
+            SeleccionColor_Amarillo.Size = new Size(tamanoOriginalBoton.Width + 12, tamanoOriginalBoton.Height + 12);
+            SeleccionColor_Amarillo.Location = new Point(locAmarillo.X - 6, locAmarillo.Y - 6);
+        }
+
+        private void SeleccionColor_Amarillo_MouseLeave(object sender, EventArgs e)
+        {
+            SeleccionColor_Amarillo.BackColor = Color.FromArgb(210, 160, 20);
+            SeleccionColor_Amarillo.Size = tamanoOriginalBoton;
+            SeleccionColor_Amarillo.Location = locAmarillo;
+        }
+
+
+        private void SeleccionColor_Azul_MouseEnter(object sender, EventArgs e)
+        {
+            SeleccionColor_Azul.BackColor = Color.DodgerBlue;
+            SeleccionColor_Azul.Size = new Size(tamanoOriginalBoton.Width + 12, tamanoOriginalBoton.Height + 12);
+            SeleccionColor_Azul.Location = new Point(locAzul.X - 6, locAzul.Y - 6);
+        }
+
+        private void SeleccionColor_Azul_MouseLeave(object sender, EventArgs e)
+        {
+            SeleccionColor_Azul.BackColor = Color.FromArgb(0, 90, 180);
+            SeleccionColor_Azul.Size = tamanoOriginalBoton;
+            SeleccionColor_Azul.Location = locAzul;
+        }
+
+        private void SeleccionColor_Verde_MouseEnter(object sender, EventArgs e)
+        {
+            SeleccionColor_Verde.BackColor = Color.LimeGreen;
+            SeleccionColor_Verde.Size = new Size(tamanoOriginalBoton.Width + 12, tamanoOriginalBoton.Height + 12);
+            SeleccionColor_Verde.Location = new Point(locVerde.X - 6, locVerde.Y - 6);
+        }
+
+        private void SeleccionColor_Verde_MouseLeave(object sender, EventArgs e)
+        {
+            SeleccionColor_Verde.BackColor = Color.FromArgb(30, 140, 60);
+            SeleccionColor_Verde.Size = tamanoOriginalBoton;
+            SeleccionColor_Verde.Location = locVerde;
+        }
+
+        private void SeleccionColor_Rojo_Click(object sender, EventArgs e)
+{
+    ColorSeleccionado(CardColor.Rojo);
+}
+
+private void SeleccionColor_Amarillo_Click(object sender, EventArgs e)
+{
+    ColorSeleccionado(CardColor.Amarillo);
+}
+
+private void SeleccionColor_Azul_Click(object sender, EventArgs e)
+{
+    ColorSeleccionado(CardColor.Azul);
+}
+
+private void SeleccionColor_Verde_Click(object sender, EventArgs e)
+{
+    ColorSeleccionado(CardColor.Verde);
+}
+
+private void ColorSeleccionado(CardColor colorElegido)
+{
+    OcultarSelectorColor();
+
+    if (cartaPendiente != null)
+    {
+        Card cartaAProcesar = cartaPendiente;
+        cartaPendiente = null;
+
+        if (esCartaRobada)
+        {
+            esCartaRobada = false;
+            jugadores[turno].Agregar_carta(cartaAProcesar);
+        }
+
+        JugarCarta(cartaAProcesar, colorElegido);
+    }
+}
+
+        
+        void iniciarColoresDeBotones() // son botones rgb  no salen en la paleta de colores predeterminada
+        {
+            
+            SeleccionColor_Rojo.BackColor = Color.FromArgb(180, 40, 40);
+            SeleccionColor_Azul.BackColor = Color.FromArgb(0, 90, 180);
+            SeleccionColor_Amarillo.BackColor = Color.FromArgb(210, 160, 20);
+            SeleccionColor_Verde.BackColor = Color.FromArgb(30, 140, 60);
+        }
+        private void OcultarSelectorColor()
+        {
+            SeleccionColor_Rojo.Size = tamanoOriginalBoton;
+            SeleccionColor_Azul.Size = tamanoOriginalBoton;
+            SeleccionColor_Amarillo.Size = tamanoOriginalBoton;
+            SeleccionColor_Verde.Size = tamanoOriginalBoton;
+
+            SeleccionColor_Rojo.Location = locRojo;
+            SeleccionColor_Azul.Location = locAzul;
+            SeleccionColor_Amarillo.Location = locAmarillo;
+            SeleccionColor_Verde.Location = locVerde;
+
+            iniciarColoresDeBotones(); 
+
+            SeleccionColor_Rojo.Visible = false;
+            SeleccionColor_Azul.Visible = false;
+            SeleccionColor_Amarillo.Visible = false;
+            SeleccionColor_Verde.Visible = false;
+        }
+
 
         private void Avanzar_turno_Click(object sender, EventArgs e)
         {
