@@ -168,5 +168,35 @@
   <ItemGroup>
     <None Include="Resources\WhatsApp Image 2026-10-06 at 10.22.58 AM.png" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\seleccioncolor.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\amarillo.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\verde.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\amarillo1.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\rojo.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\azul.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\rojoseleccionado.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\azulseleccionado.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\amarilloseleccionado.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\verdeseleccionado.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
