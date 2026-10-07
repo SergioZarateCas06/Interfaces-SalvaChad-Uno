@@ -82,30 +82,64 @@ namespace UnoGame
 
         void ActualizarVista()
         {
-            // La posición visual rota según el turno: el jugador en turno siempre
-            // aparece abajo (su mano real), y los otros 3 se reparten alrededor,
-            // simulando que la mesa gira.
+            // La mesa gira: el jugador en turno siempre aparece abajo
             int idxIzquierda = (turno + sentido + numJugadores) % numJugadores;
             int idxArriba = (turno + 2 * sentido + numJugadores) % numJugadores;
             int idxDerecha = (turno + 3 * sentido + numJugadores) % numJugadores;
 
-            labelTurno.Text = "Turno de: " + jugadores[turno].Nombre;
-            label_Mano_jugador.Text = "Mano de: " + jugadores[turno].Nombre;
+            // Quién juega y quién sigue
+            labelTurno.Text = "Turno de: " + jugadores[turno].Nombre +
+                              "  →  Siguiente turno es: " + jugadores[idxIzquierda].Nombre;
+            labelTurno.Font = new Font(labelTurno.Font, FontStyle.Bold);
+
+            // Contadores de la burra y del descarte
             labelBurra.Text = "Burra: " + CartasRestantes();
-
-            panel_mano_jugador1.Text = jugadores[idxArriba].Nombre;
-            label_jugador2.Text = jugadores[idxIzquierda].Nombre;
-            label_jugador3.Text = jugadores[idxDerecha].Nombre;
-
-            Card sup = VerCartaSuperior();
             labelDescarte.Text = "Descarte: " + descarte.Count + " cartas";
 
+            // Cantidad de cartas de los 4 jugadores (uno por posición)
+            label_jugador1.Text = jugadores[turno].Nombre + ": " +
+                                  jugadores[turno].cantidad_cartas + " cartas";
+            label_jugador2.Text = jugadores[idxIzquierda].Nombre + ": " +
+                                  jugadores[idxIzquierda].cantidad_cartas + " cartas";
+            label_jugador3.Text = jugadores[idxArriba].Nombre + ": " +
+                                  jugadores[idxArriba].cantidad_cartas + " cartas";
+            label_jugador4.Text = jugadores[idxDerecha].Nombre + ": " +
+                                  jugadores[idxDerecha].cantidad_cartas + " cartas";
+
+            // Dibujar zonas
             MostrarManoJugador();
             MostrarDescarte();
             MostrarBurra();
             MostrarRival(panel_rival_arriba, idxArriba);
             MostrarRival(panel_rival_izquierda, idxIzquierda);
             MostrarRival(panel_rival_derecha, idxDerecha);
+
+            // Indicadores de estado
+            MostrarColorActivo();
+            MostrarSentido();
+        }
+
+        private void MostrarColorActivo()
+        {
+            Color c;
+            switch (colorActivo)
+            {
+                case CardColor.Rojo: c = Color.Red; break;
+                case CardColor.Azul: c = Color.RoyalBlue; break;
+                case CardColor.Verde: c = Color.Green; break;
+                case CardColor.Amarillo: c = Color.Gold; break;
+                default: c = Color.Gray; break;
+            }
+            panelColor.BackColor = c;
+            labelColor.Text = "Color actual: " + colorActivo;
+        }
+
+        private void MostrarSentido()
+        {
+            if (sentido == 1)
+                labelSentido.Text = "Sentido: Izquierda";
+            else
+                labelSentido.Text = "Sentido: Derecha";
         }
 
         private void MostrarRival(Panel panel, int indiceJugador)
@@ -202,6 +236,7 @@ namespace UnoGame
                 cc.BocaAbajo = true;
                 cc.Location = new Point(5, 5);
                 cc.Click += (s, e) => TomarCartaYIntentarJugar(jugadores[turno].Nombre);
+                cc.Cursor = Cursors.Hand;
                 panelBurra.Controls.Add(cc);
             }
         }
@@ -567,6 +602,7 @@ namespace UnoGame
             $"Cartas restantes en la burra: {CartasRestantes()}";
         }
 
+
         public class Player
         {
             public string Nombre;
@@ -689,6 +725,7 @@ namespace UnoGame
         private void Invertir_turno_Click(object sender, EventArgs e)
         {
             InvertirSentido();
+            ActualizarVista();
         }
         private void button2_Click(object sender, EventArgs e)
         {
