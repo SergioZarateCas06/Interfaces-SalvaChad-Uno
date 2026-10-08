@@ -129,8 +129,21 @@ namespace UnoGame
             MostrarRival(panel_rival_derecha, idxDerecha);
 
             // Indicadores de estado
+            // Indicadores de estado
             MostrarColorActivo();
             MostrarSentido();
+            ActualizarBotonUno();
+        }
+
+        private void ActualizarBotonUno()
+        {
+            bool debeAparecer =
+                !partidaTerminada &&
+                jugadores[turno].cantidad_cartas == 2 &&
+                !jugadores[turno].DijoUno &&
+                TieneJugadaValida(manosJugadores[turno]);
+
+            button3.Visible = debeAparecer;
         }
 
         private void MostrarColorActivo()
@@ -264,19 +277,6 @@ namespace UnoGame
                 return;
             }
 
-            if (manosJugadores[turno].Count == 2 && !jugadores[turno].DijoUno)
-            {
-                DialogResult respuesta = MessageBox.Show(
-                    $"{jugadores[turno].Nombre}, tienes 2 cartas. ¿Quieres decir UNO antes de jugar?",
-                    "¡UNO!", MessageBoxButtons.YesNo);
-
-                if (respuesta == DialogResult.Yes)
-                {
-                    CallUno(jugadores[turno]);
-                    MessageBox.Show($"{jugadores[turno].Nombre} dijo UNO.");
-                }
-            }
-
             if (!JugadaValida(cartaElegida))
             {
                 MessageBox.Show("Esa carta no es una jugada válida.");
@@ -377,11 +377,18 @@ namespace UnoGame
                 return;
             }
 
-            if (jugadores[turno].cantidad_cartas == 1 && !jugadores[turno].DijoUno)
+            if (jugadores[turno].cantidad_cartas == 1)
             {
-                MessageBox.Show($"{jugadores[turno].Nombre} no dijo UNO a tiempo. ¡Penalización de 2 cartas!");
-                for (int i = 0; i < 2; i++)
-                    jugadores[turno].Agregar_carta(SacarCarta());
+                if (jugadores[turno].DijoUno)
+                {
+                    MessageBox.Show($"{jugadores[turno].Nombre} dijo UNO.");
+                }
+                else
+                {
+                    MessageBox.Show($"{jugadores[turno].Nombre} no dijo UNO, come 2 cartas.");
+                    for (int i = 0; i < 2; i++)
+                        jugadores[turno].Agregar_carta(SacarCarta());
+                }
             }
 
             if (cartaJugada.Type == CardType.Comodin || cartaJugada.Type == CardType.Mas4)
@@ -393,7 +400,11 @@ namespace UnoGame
                 InvertirSentido();
 
             if (cartaJugada.Type == CardType.Salta)
+            {
+                int jugadorSaltado = (turno + sentido + numJugadores) % numJugadores;
+                MessageBox.Show($"{jugadores[jugadorSaltado].Nombre} pierde turno.");
                 AvanzarTurno();
+            }
 
             if (cartaJugada.Type == CardType.Mas2)
             {
@@ -402,6 +413,7 @@ namespace UnoGame
                 {
                     jugadores[siguienteJugador].Agregar_carta(SacarCarta());
                 }
+                MessageBox.Show($"{jugadores[siguienteJugador].Nombre} come 2 cartas.");
                 AvanzarTurno();
             }
 
@@ -412,6 +424,7 @@ namespace UnoGame
                 {
                     jugadores[siguienteJugador].Agregar_carta(SacarCarta());
                 }
+                MessageBox.Show($"{jugadores[siguienteJugador].Nombre} come 4 cartas.");
                 AvanzarTurno();
             }
 
@@ -500,19 +513,6 @@ namespace UnoGame
 
             List<Card> manoActual = manosJugadores[turno];
             string nombreJugadorActual = jugadores[turno].Nombre;
-
-            if (manoActual.Count == 2 && !jugadores[turno].DijoUno)
-            {
-                DialogResult respuesta = MessageBox.Show(
-                    $"{nombreJugadorActual}, tienes 2 cartas. ¿Quieres decir UNO antes de jugar?",
-                    "¡UNO!", MessageBoxButtons.YesNo);
-
-                if (respuesta == DialogResult.Yes)
-                {
-                    CallUno(jugadores[turno]);
-                    MessageBox.Show($"{nombreJugadorActual} dijo UNO.");
-                }
-            }
 
             while (true)
             {
@@ -846,7 +846,18 @@ private void SeleccionColor_Verde_Click(object sender, EventArgs e)
     ColorSeleccionado(CardColor.Verde);
 }
 
-private void ColorSeleccionado(CardColor colorElegido)
+        private void Form1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            CallUno(jugadores[turno]);
+            button3.Visible = false;
+        }
+
+        private void ColorSeleccionado(CardColor colorElegido)
 {
     OcultarSelectorColor();
 
