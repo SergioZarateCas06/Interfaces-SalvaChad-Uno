@@ -68,6 +68,12 @@
     <Compile Include="FormConfiguracion.Designer.cs">
       <DependentUpon>FormConfiguracion.cs</DependentUpon>
     </Compile>
+    <Compile Include="FormFinPartida.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormFinPartida.Designer.cs">
+      <DependentUpon>FormFinPartida.cs</DependentUpon>
+    </Compile>
     <Compile Include="FormHistorial.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -87,6 +93,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="FormConfiguracion.resx">
       <DependentUpon>FormConfiguracion.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormFinPartida.resx">
+      <DependentUpon>FormFinPartida.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormHistorial.resx">
+      <DependentUpon>FormHistorial.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="FormMenu.resx">
       <DependentUpon>FormMenu.cs</DependentUpon>
@@ -197,6 +209,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\verdeseleccionado.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ImagenJugarDeNuevo.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ImagenVolverAlMenu.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

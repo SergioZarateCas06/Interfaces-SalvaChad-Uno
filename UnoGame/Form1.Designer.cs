@@ -225,7 +225,7 @@
             this.SeleccionColor_Rojo.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
             this.SeleccionColor_Rojo.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.SeleccionColor_Rojo.Location = new System.Drawing.Point(431, 172);
-            this.SeleccionColor_Rojo.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.SeleccionColor_Rojo.Margin = new System.Windows.Forms.Padding(4);
             this.SeleccionColor_Rojo.Name = "SeleccionColor_Rojo";
             this.SeleccionColor_Rojo.Size = new System.Drawing.Size(191, 127);
             this.SeleccionColor_Rojo.TabIndex = 21;
@@ -242,7 +242,7 @@
             this.SeleccionColor_Azul.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
             this.SeleccionColor_Azul.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.SeleccionColor_Azul.Location = new System.Drawing.Point(429, 306);
-            this.SeleccionColor_Azul.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.SeleccionColor_Azul.Margin = new System.Windows.Forms.Padding(4);
             this.SeleccionColor_Azul.Name = "SeleccionColor_Azul";
             this.SeleccionColor_Azul.Size = new System.Drawing.Size(191, 127);
             this.SeleccionColor_Azul.TabIndex = 22;
@@ -261,7 +261,7 @@
             this.SeleccionColor_Amarillo.FlatAppearance.BorderSize = 2;
             this.SeleccionColor_Amarillo.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.SeleccionColor_Amarillo.Location = new System.Drawing.Point(629, 171);
-            this.SeleccionColor_Amarillo.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.SeleccionColor_Amarillo.Margin = new System.Windows.Forms.Padding(4);
             this.SeleccionColor_Amarillo.Name = "SeleccionColor_Amarillo";
             this.SeleccionColor_Amarillo.Size = new System.Drawing.Size(191, 127);
             this.SeleccionColor_Amarillo.TabIndex = 23;
@@ -279,7 +279,7 @@
             this.SeleccionColor_Verde.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(192)))), ((int)(((byte)(0)))));
             this.SeleccionColor_Verde.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.SeleccionColor_Verde.Location = new System.Drawing.Point(629, 305);
-            this.SeleccionColor_Verde.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.SeleccionColor_Verde.Margin = new System.Windows.Forms.Padding(4);
             this.SeleccionColor_Verde.Name = "SeleccionColor_Verde";
             this.SeleccionColor_Verde.Size = new System.Drawing.Size(191, 127);
             this.SeleccionColor_Verde.TabIndex = 24;
@@ -329,11 +329,14 @@
             this.Controls.Add(this.panel_rival_izquierda);
             this.Controls.Add(this.panelDescarte);
             this.Controls.Add(this.panelBurra);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.MaximizeBox = false;
             this.MinimumSize = new System.Drawing.Size(999, 648);
             this.Name = "Form1";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Form1";
+            this.Text = "Juego UNO";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.Load += new System.EventHandler(this.Form1_Load);
             this.Click += new System.EventHandler(this.Form1_Click);
             this.panelBurra.ResumeLayout(false);
