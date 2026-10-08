@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Drawing.Text;
 using System.Linq;
 using System.Windows.Forms;
 using Microsoft.VisualBasic;
@@ -28,7 +29,8 @@ namespace UnoGame
         public event Action<int> TurnoCambiado;
         public event Action<Player> PartidaTerminada;
         private bool partidaTerminada = false;
-         Card cartaPendiente = null;
+        private bool cierreForzado = false;
+        Card cartaPendiente = null;
          bool esCartaRobada = false;
         Size tamanoOriginalBoton;
         Point locRojo, locAzul, locAmarillo, locVerde;
@@ -51,6 +53,23 @@ namespace UnoGame
             TurnoCambiado += MostrarTurno;
             RepartirCartas();
         }
+        
+        void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if(cierreForzado)
+            {
+                return;
+            }
+            if (e.CloseReason == CloseReason.UserClosing)
+            {
+                DialogResult res = MessageBox.Show("Quieres salir del juego? Se perdera el progreso", "Salir del juego", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                if(res == DialogResult.No)
+                {
+                    e.Cancel = true;
+                }
+            }
+        }
+
         void iniciarTamanoDeBotones()
         {
             tamanoOriginalBoton = SeleccionColor_Rojo.Size;
@@ -80,7 +99,6 @@ namespace UnoGame
       
         void MostrarTurno(int t)
         {
-            richTextBox1.Text = "Turno de: " + jugadores[t].Nombre;
             ActualizarVista();
         }
 
@@ -128,7 +146,6 @@ namespace UnoGame
             MostrarRival(panel_rival_izquierda, idxIzquierda);
             MostrarRival(panel_rival_derecha, idxDerecha);
 
-            // Indicadores de estado
             // Indicadores de estado
             MostrarColorActivo();
             MostrarSentido();
@@ -492,9 +509,21 @@ namespace UnoGame
         private void TerminarPartida(Player ganador)
         {
             partidaTerminada = true;
+            FormFinPartida formFin = new FormFinPartida();
+            formFin.MostrarGanador(ganador.Nombre);
+            formFin.ShowDialog();
 
-            MessageBox.Show($"¡{ganador.Nombre} ganó la partida!", "Fin de la partida");
-            richTextBox1.Text = $"Partida terminada. Ganador: {ganador.Nombre}";
+            if (formFin.DialogResult == DialogResult.Retry)
+            {
+                ReiniciarPartida();
+            }
+
+            else
+            {
+                cierreForzado = true;
+                this.DialogResult = DialogResult.Abort;
+                this.Close();
+            }
 
             if (PartidaTerminada != null)
                 PartidaTerminada.Invoke(ganador);
@@ -502,6 +531,12 @@ namespace UnoGame
             ActualizarVista();
         }
 
+        private void ReiniciarPartida()
+        {
+            turno = 0;
+            sentido = 1;
+            RepartirCartas();
+        }
         private void JugarTurno()
         {
             if (cartaPendiente != null) return;
@@ -637,13 +672,6 @@ namespace UnoGame
         private void botonRepartir(object sender, EventArgs e)
         {
             RepartirCartas();
-            richTextBox1.Text =
-            $"J1: {string.Join(", ", Cartas1.Select(c => c.ToString()))}\n" +
-            $"J2: {string.Join(", ", Cartas2.Select(c => c.ToString()))}\n" +
-            $"J3: {string.Join(", ", Cartas3.Select(c => c.ToString()))}\n" +
-            $"J4: {string.Join(", ", Cartas4.Select(c => c.ToString()))}\n" +
-            $"Carta volteada: {ultimaCarta}\n" +
-            $"Cartas restantes en la burra: {CartasRestantes()}";
         }
 
 
@@ -696,7 +724,7 @@ namespace UnoGame
 
             foreach (Player jugador in jugadores)
             {
-                for (int i = 0; i < 7; i++)
+                for (int i = 0; i < 1; i++)
                 {
                     jugador.Agregar_carta(SacarCarta());
                 }
@@ -738,7 +766,6 @@ namespace UnoGame
         private void botonBarajar(object sender, EventArgs e)
         {
             BarajarMazo();
-            richTextBox1.Text = string.Join(", ", burra.Select(c => c.ToString()));
         }
 
         private void labelBurra_Click(object sender, EventArgs e)
@@ -760,14 +787,6 @@ namespace UnoGame
         {
 
         }
-
-
-
-
-
-
-
-
 
         private void SeleccionColor_Rojo_MouseEnter(object sender, EventArgs e)
         {

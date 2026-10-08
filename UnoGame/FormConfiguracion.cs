@@ -86,7 +86,14 @@ namespace UnoGame
                 this.Hide();
                 Form juego = new Form1(jugador1, jugador2, jugador3, jugador4);
                 juego.ShowDialog();
-                this.Show();
+                if (juego.DialogResult == DialogResult.Abort)
+                {
+                    this.Close();
+                }
+                else
+                {
+                    this.Show();
+                }
             }
         }
     }

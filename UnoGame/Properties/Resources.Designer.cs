@@ -243,6 +243,26 @@ namespace UnoGame.Properties {
         /// <summary>
         ///   Busca un recurso adaptado de tipo System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap ImagenJugarDeNuevo {
+            get {
+                object obj = ResourceManager.GetObject("ImagenJugarDeNuevo", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Busca un recurso adaptado de tipo System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap ImagenVolverAlMenu {
+            get {
+                object obj = ResourceManager.GetObject("ImagenVolverAlMenu", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Busca un recurso adaptado de tipo System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap NombreJugador1 {
             get {
                 object obj = ResourceManager.GetObject("NombreJugador1", resourceCulture);

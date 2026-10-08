@@ -55,7 +55,7 @@
             // richTextBox2
             // 
             this.richTextBox2.Location = new System.Drawing.Point(281, 73);
-            this.richTextBox2.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.richTextBox2.Margin = new System.Windows.Forms.Padding(4);
             this.richTextBox2.MaxLength = 30;
             this.richTextBox2.Multiline = false;
             this.richTextBox2.Name = "richTextBox2";
@@ -68,7 +68,7 @@
             // 
             this.richTextBox3.BackColor = System.Drawing.Color.White;
             this.richTextBox3.Location = new System.Drawing.Point(281, 179);
-            this.richTextBox3.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.richTextBox3.Margin = new System.Windows.Forms.Padding(4);
             this.richTextBox3.MaxLength = 30;
             this.richTextBox3.Multiline = false;
             this.richTextBox3.Name = "richTextBox3";
@@ -81,7 +81,7 @@
             // richTextBox5
             // 
             this.richTextBox5.Location = new System.Drawing.Point(281, 276);
-            this.richTextBox5.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.richTextBox5.Margin = new System.Windows.Forms.Padding(4);
             this.richTextBox5.MaxLength = 30;
             this.richTextBox5.Multiline = false;
             this.richTextBox5.Name = "richTextBox5";
@@ -93,7 +93,7 @@
             // richTextBox7
             // 
             this.richTextBox7.Location = new System.Drawing.Point(281, 386);
-            this.richTextBox7.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.richTextBox7.Margin = new System.Windows.Forms.Padding(4);
             this.richTextBox7.MaxLength = 30;
             this.richTextBox7.Multiline = false;
             this.richTextBox7.Name = "richTextBox7";
@@ -221,7 +221,9 @@
             this.Controls.Add(this.pictureBox2);
             this.Controls.Add(this.richTextBox2);
             this.Controls.Add(this.pictureBox1);
-            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.Margin = new System.Windows.Forms.Padding(4);
+            this.MaximizeBox = false;
             this.Name = "FormConfiguracion";
             this.Text = "Iniciar partida";
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox9)).EndInit();

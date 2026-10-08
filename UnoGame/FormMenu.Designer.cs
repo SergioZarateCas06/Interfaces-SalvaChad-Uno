@@ -40,7 +40,7 @@
             // 
             this.pbSalir.BackColor = System.Drawing.Color.Transparent;
             this.pbSalir.Image = global::UnoGame.Properties.Resources.ImagenBotonSalir1;
-            this.pbSalir.Location = new System.Drawing.Point(285, 267);
+            this.pbSalir.Location = new System.Drawing.Point(309, 317);
             this.pbSalir.Name = "pbSalir";
             this.pbSalir.Size = new System.Drawing.Size(204, 69);
             this.pbSalir.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
@@ -52,7 +52,7 @@
             // 
             this.pbHistorial.BackColor = System.Drawing.Color.Transparent;
             this.pbHistorial.Image = global::UnoGame.Properties.Resources.ImagenBotonHistorial1;
-            this.pbHistorial.Location = new System.Drawing.Point(245, 145);
+            this.pbHistorial.Location = new System.Drawing.Point(268, 201);
             this.pbHistorial.Name = "pbHistorial";
             this.pbHistorial.Size = new System.Drawing.Size(293, 85);
             this.pbHistorial.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
@@ -64,7 +64,7 @@
             // 
             this.pbNuevaPartida.BackColor = System.Drawing.Color.Transparent;
             this.pbNuevaPartida.Image = global::UnoGame.Properties.Resources.ImagenBotonNuevaPartida1;
-            this.pbNuevaPartida.Location = new System.Drawing.Point(206, 22);
+            this.pbNuevaPartida.Location = new System.Drawing.Point(223, 58);
             this.pbNuevaPartida.Name = "pbNuevaPartida";
             this.pbNuevaPartida.Size = new System.Drawing.Size(388, 106);
             this.pbNuevaPartida.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
@@ -82,6 +82,8 @@
             this.Controls.Add(this.pbSalir);
             this.Controls.Add(this.pbHistorial);
             this.Controls.Add(this.pbNuevaPartida);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.MaximizeBox = false;
             this.Name = "FormMenu";
             this.Text = "Menú Principal";
             ((System.ComponentModel.ISupportInitialize)(this.pbSalir)).EndInit();
