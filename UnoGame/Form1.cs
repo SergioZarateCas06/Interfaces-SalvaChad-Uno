@@ -724,7 +724,7 @@ namespace UnoGame
 
             foreach (Player jugador in jugadores)
             {
-                for (int i = 0; i < 1; i++)
+                for (int i = 0; i < 7; i++)
                 {
                     jugador.Agregar_carta(SacarCarta());
                 }

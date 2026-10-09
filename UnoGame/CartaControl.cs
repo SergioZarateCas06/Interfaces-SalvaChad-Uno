@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
+using System.Collections.Generic;
 
 namespace UnoGame
 {
@@ -11,6 +12,49 @@ namespace UnoGame
         private bool bocaAbajo;
         private bool esJugable;
         private bool mouseEncima;
+
+
+        private static readonly Dictionary<string, Image> cache = new Dictionary<string, Image>();
+
+        private static Image ObtenerImagen(string nombre)
+        {
+            if (nombre == null) return null;
+
+            Image img;
+            if (!cache.TryGetValue(nombre, out img))
+            {
+                img = Properties.Resources.ResourceManager.GetObject(nombre) as Image;
+                cache[nombre] = img;
+            }
+            return img;
+        }
+
+        private string ObtenerNombreImagen(Card c)
+        {
+            if (c.Type == CardType.Comodin) return "comodin";
+            if (c.Type == CardType.Mas4) return "mas4";
+
+            string color = c.Color.ToString().ToLower();
+
+            switch (c.Type)
+            {
+                case CardType.Numero: return color + "_" + c.Number;
+                case CardType.Salta: return color + "_salta";
+                case CardType.Reversa: return color + "_reversa";
+                case CardType.Mas2: return color + "_mas2";
+            }
+            return null;
+        }
+        private void DibujarImagenRecortada(Graphics g, GraphicsPath path, Image img)
+        {
+            RectangleF destino = path.GetBounds();
+            GraphicsState estado = g.Save();
+            g.SetClip(path);
+            g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+            g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+            g.DrawImage(img, destino);
+            g.Restore(estado);
+        }
 
         public CartaControl()
         {
@@ -99,6 +143,14 @@ namespace UnoGame
 
         private void DibujarReverso(Graphics g, GraphicsPath path)
         {
+
+            Image imgReverso = ObtenerImagen("reverso");
+            if (imgReverso != null)
+            {
+                DibujarImagenRecortada(g, path, imgReverso);
+                return;
+            }
+
             using (Brush fondo = new SolidBrush(Color.FromArgb(30, 30, 30)))
                 g.FillPath(fondo, path);
 
@@ -121,6 +173,14 @@ namespace UnoGame
 
         private void DibujarCara(Graphics g, GraphicsPath path)
         {
+
+            Image imgCara = ObtenerImagen(ObtenerNombreImagen(carta));
+            if (imgCara != null)
+            {
+                DibujarImagenRecortada(g, path, imgCara);
+                return;
+            }
+
             Color colorFondo = ObtenerColor(carta.Color);
             using (Brush fondo = new SolidBrush(colorFondo))
                 g.FillPath(fondo, path);
