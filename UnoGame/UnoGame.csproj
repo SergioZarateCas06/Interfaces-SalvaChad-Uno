@@ -216,5 +216,62 @@
   <ItemGroup>
     <None Include="Resources\ImagenVolverAlMenu.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="Resources\amarillo_0.png" />
+    <Content Include="Resources\amarillo_1.png" />
+    <Content Include="Resources\amarillo_2.png" />
+    <Content Include="Resources\amarillo_3.png" />
+    <Content Include="Resources\amarillo_4.png" />
+    <Content Include="Resources\amarillo_5.png" />
+    <Content Include="Resources\amarillo_6.png" />
+    <Content Include="Resources\amarillo_7.png" />
+    <Content Include="Resources\amarillo_8.png" />
+    <Content Include="Resources\amarillo_9.png" />
+    <Content Include="Resources\amarillo_mas2.png" />
+    <Content Include="Resources\amarillo_reversa.png" />
+    <Content Include="Resources\amarillo_salta.png" />
+    <Content Include="Resources\azul_0.png" />
+    <Content Include="Resources\azul_1.png" />
+    <Content Include="Resources\azul_2.png" />
+    <Content Include="Resources\azul_3.png" />
+    <Content Include="Resources\azul_4.png" />
+    <Content Include="Resources\azul_5.png" />
+    <Content Include="Resources\azul_6.png" />
+    <Content Include="Resources\azul_7.png" />
+    <Content Include="Resources\azul_8.png" />
+    <Content Include="Resources\azul_9.png" />
+    <Content Include="Resources\azul_mas2.png" />
+    <Content Include="Resources\azul_reversa.png" />
+    <Content Include="Resources\azul_salta.png" />
+    <Content Include="Resources\comodin.png" />
+    <Content Include="Resources\mas4.png" />
+    <Content Include="Resources\reverso.png" />
+    <Content Include="Resources\rojo_0.png" />
+    <Content Include="Resources\rojo_1.png" />
+    <Content Include="Resources\rojo_2.png" />
+    <Content Include="Resources\rojo_3.png" />
+    <Content Include="Resources\rojo_4.png" />
+    <Content Include="Resources\rojo_5.png" />
+    <Content Include="Resources\rojo_6.png" />
+    <Content Include="Resources\rojo_7.png" />
+    <Content Include="Resources\rojo_8.png" />
+    <Content Include="Resources\rojo_9.png" />
+    <Content Include="Resources\rojo_mas2.png" />
+    <Content Include="Resources\rojo_reversa.png" />
+    <Content Include="Resources\rojo_salta.png" />
+    <Content Include="Resources\verde_0.png" />
+    <Content Include="Resources\verde_1.png" />
+    <Content Include="Resources\verde_2.png" />
+    <Content Include="Resources\verde_3.png" />
+    <Content Include="Resources\verde_4.png" />
+    <Content Include="Resources\verde_5.png" />
+    <Content Include="Resources\verde_6.png" />
+    <Content Include="Resources\verde_7.png" />
+    <Content Include="Resources\verde_8.png" />
+    <Content Include="Resources\verde_9.png" />
+    <Content Include="Resources\verde_mas2.png" />
+    <Content Include="Resources\verde_reversa.png" />
+    <Content Include="Resources\verde_salta.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
