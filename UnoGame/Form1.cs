@@ -9,13 +9,17 @@ using System.Windows.Forms;
 using Microsoft.VisualBasic;
 using System.IO;
 using System.Media;
-
+using NAudio.Wave;
 
 namespace UnoGame
 {
     public partial class Form1 : Form
     {
         Dictionary<string, SoundPlayer> sonidos = new Dictionary<string, SoundPlayer>();
+        WaveOutEvent salidaMusica;
+        Mp3FileReader lectorMusica;
+        bool silenciado = false;
+        bool cerrando = false;
 
         String jugador1, jugador2, jugador3, jugador4;
         int numJugadores = 4;
@@ -69,6 +73,8 @@ namespace UnoGame
 
             InitializeComponent();
             CargarSonidos();
+            buttonSilencio.Click += (s, e) => AlternarSilencio();
+            IniciarMusica();
             iniciarTamanoDeBotones();
             iniciarColoresDeBotones();
             jugadores.Add(new Player(jugador1, Cartas1));
@@ -202,7 +208,38 @@ namespace UnoGame
         
          
         }
+        void IniciarMusica()
+        {
+            try
+            {
+                lectorMusica = new Mp3FileReader(Properties.Resources.musica);
+                salidaMusica = new WaveOutEvent();
+                salidaMusica.Init(lectorMusica);
+                salidaMusica.Volume = 0.25f;   // 0.0 a 1.0
 
+                // Repetir en bucle al terminar
+                salidaMusica.PlaybackStopped += (s, e) =>
+                {
+                    if (cerrando) return;
+                    lectorMusica.Position = 0;
+                    salidaMusica.Play();
+                };
+
+                salidaMusica.Play();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("No se pudo iniciar la música: " + ex.Message);
+            }
+        }
+
+        protected override void OnFormClosed(FormClosedEventArgs e)
+        {
+            cerrando = true;
+            if (salidaMusica != null) salidaMusica.Dispose();
+            if (lectorMusica != null) lectorMusica.Dispose();
+            base.OnFormClosed(e);
+        }
         void AgregarSonido(string nombre, Stream flujo)
         {
             SoundPlayer sp = new SoundPlayer(flujo);
@@ -316,6 +353,7 @@ namespace UnoGame
         }
         void Sonar(string nombre)
         {
+            if (silenciado) return;   // NUEVO
             SoundPlayer sp;
             if (sonidos.TryGetValue(nombre, out sp))
                 sp.Play();
@@ -360,7 +398,7 @@ namespace UnoGame
 
             if (!JugadaValida(cartaElegida))
             {
-                
+                Sonar("error");   
                 MessageBox.Show("Esa carta no es una jugada válida.");
                 return;
             }
@@ -379,6 +417,22 @@ namespace UnoGame
             }
 
             JugarConAnimacion(origen, cartaElegida, CardColor.Ninguno);
+        }
+        void AlternarSilencio()
+        {
+            silenciado = !silenciado;
+
+            if (silenciado)
+            {
+                if (salidaMusica != null) salidaMusica.Pause();
+                foreach (SoundPlayer sp in sonidos.Values) sp.Stop();   // corta el efecto que esté sonando
+            }
+            else
+            {
+                if (salidaMusica != null) salidaMusica.Play();
+            }
+
+            buttonSilencio.Text = silenciado ? "🔇 Sonido: OFF" : "🔊 Sonido: ON";
         }
         private void JugarConAnimacion(CartaControl origen, Card carta, CardColor color)
         {
@@ -470,6 +524,7 @@ namespace UnoGame
 
             if (!JugadaValida(cartaJugada))
             {
+                Sonar("error");
                 MessageBox.Show("La jugada no es valida");
                 return;
             }
@@ -492,7 +547,7 @@ namespace UnoGame
                 }
                 else
                 {
-                  
+                    Sonar("error");
                     MessageBox.Show($"{jugadores[turno].Nombre} no dijo UNO, come 2 cartas.");
                     for (int i = 0; i < 2; i++)
                         jugadores[turno].Agregar_carta(SacarCarta());
@@ -708,7 +763,7 @@ namespace UnoGame
 
             if (cartaRobada == null)
             {
-              
+                Sonar("error");
                 MessageBox.Show("No quedan cartas para robar.");
                 AvanzarTurno();
                 return;
@@ -762,6 +817,7 @@ namespace UnoGame
             }
             else
             {
+                Sonar("error");
                 int n = jugadores[turno].cantidad_cartas;
                 int x = 10 + n * SeparacionMano(n + 1);
                 x = Math.Min(x, panel_mano_jugador1.Width - 80);
@@ -1044,7 +1100,8 @@ namespace UnoGame
         private void LanzarCartaInicial()
         {
             cartaEnVuelo = SacarCarta();
-            while (cartaEnVuelo != null && cartaEnVuelo.Type == CardType.Mas4)
+            while (cartaEnVuelo != null &&
+            (cartaEnVuelo.Type == CardType.Mas4 || cartaEnVuelo.Type == CardType.Comodin))
             {
                 DevolverYBarajar(cartaEnVuelo);
                 cartaEnVuelo = SacarCarta();
@@ -1286,6 +1343,11 @@ private void SeleccionColor_Verde_Click(object sender, EventArgs e)
                     JugarConAnimacion(origen, cartaAProcesar, colorElegido);
                 }
             }
+        }
+
+        private void buttonSilencio_Click(object sender, EventArgs e)
+        {
+
         }
 
         // NUEVO: la carta robada vuela de la burra al descarte y se juega al aterrizar
