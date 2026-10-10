@@ -55,6 +55,9 @@ namespace UnoGame
         public event Action<int> TurnoCambiado;
         public event Action<Player> PartidaTerminada;
         private bool partidaTerminada = false;
+        private readonly ApiCliente api = new ApiCliente();
+        private int partidaIdActual = -1;
+        private int numeroTurnoActual = 0;
         private bool cierreForzado = false;
         Card cartaPendiente = null;
          bool esCartaRobada = false;
@@ -459,7 +462,7 @@ namespace UnoGame
             foreach (Card carta in mazo)
                 burra.Push(carta);
         }
-        private void JugarCarta(Card cartaJugada, CardColor colorElegido = CardColor.Ninguno)
+        private async void JugarCarta(Card cartaJugada, CardColor colorElegido = CardColor.Ninguno)
         {
             if (cartaPendiente != null) return;
             if (partidaTerminada)
@@ -477,6 +480,19 @@ namespace UnoGame
 
             descarte.Push(cartaJugada);
             jugadores[turno].Quitar_carta(cartaJugada);
+
+            numeroTurnoActual++;
+            if (partidaIdActual != -1)
+            {
+                try
+                {
+                    await api.RegistrarMovimiento(partidaIdActual, numeroTurnoActual, jugadores[turno].Nombre, "Jugar", cartaJugada.ToString());
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("No se pudo registrar el movimiento: " + ex.Message);
+                }
+            }
 
             if (jugadores[turno].cantidad_cartas == 0)
             {
@@ -591,10 +607,22 @@ namespace UnoGame
         }
 
 
-        private void TerminarPartida(Player ganador)
+        private async void TerminarPartida(Player ganador)
         {
             Sonar("victoria");
             partidaTerminada = true;
+
+            if (partidaIdActual != -1)
+            {
+                try
+                {
+                    await api.RegistrarGanador(partidaIdActual, ganador.Nombre);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("No se pudo registrar el ganador: " + ex.Message);
+                }
+            }
             FormFinPartida formFin = new FormFinPartida();
             formFin.MostrarGanador(ganador.Nombre);
             formFin.ShowDialog();
@@ -840,7 +868,7 @@ namespace UnoGame
                 return mano.Remove(carta);
             }
         }
-        private void RepartirCartas()
+        private async void RepartirCartas()
         {
             timerReparto.Stop();
             comiendo = false;
@@ -867,6 +895,18 @@ namespace UnoGame
             panel_rival_derecha.Controls.Clear();
             panelDescarte.Controls.Clear();
             MostrarBurra();
+
+            numeroTurnoActual = 0;
+            try
+            {
+                List<string> nombres = new List<string> { jugador1, jugador2, jugador3, jugador4 };
+                partidaIdActual = await api.CrearPartida(nombres);
+            }
+            catch (Exception ex)
+            {
+                partidaIdActual = -1;
+                MessageBox.Show("No se pudo registrar la partida en el servidor: " + ex.Message);
+            }
 
             timerReparto.Start();
         }
