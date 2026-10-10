@@ -7,14 +7,33 @@ using System.Drawing.Text;
 using System.Linq;
 using System.Windows.Forms;
 using Microsoft.VisualBasic;
+using System.IO;
+using System.Media;
+
 
 namespace UnoGame
 {
     public partial class Form1 : Form
     {
+        Dictionary<string, SoundPlayer> sonidos = new Dictionary<string, SoundPlayer>();
+
         String jugador1, jugador2, jugador3, jugador4;
         int numJugadores = 4;
         Card ultimaCarta;
+        CartaControl controlPendiente;
+        Point inicioVuelo;   // de dónde sale el vuelo actual
+        System.Windows.Forms.Timer timerReparto = new System.Windows.Forms.Timer();
+        Control cartaVolando;   // CartaControl o PictureBox, según el destino
+        Card cartaEnVuelo;
+        Point origenVuelo = new Point(390, 211);   // de aquí salen las cartas
+        Point destinoVuelo;
+        int pasoVuelo;
+        int pausa;
+        const int PASOS_VUELO = 10;   // más pasos = vuelo más lento
+        const int TICKS_PAUSA = 5;   // pausa entre carta y carta (cada tick son ~15 ms)
+        int repartoRonda = 0;
+        int repartoJugador = 0;
+        bool repartiendo = false;
         int turno = 0;
         int sentido = 1;
         public CardColor colorActivo;
@@ -24,6 +43,13 @@ namespace UnoGame
         List<Card> Cartas2 = new List<Card>();
         List<Card> Cartas3 = new List<Card>();
         List<Card> Cartas4 = new List<Card>();
+        bool robando = false;
+        bool comiendo = false;
+        int comerRestantes;
+        int comerJugador;
+        Action alTerminarComer;
+        bool esperandoColorRobada = false;   // la carta robada ya aterrizó y espera que se elija color
+        Action alAterrizar;   // lo que se hace cuando la carta robada llega a la mano
         List<Player> jugadores = new List<Player>();
         List<Card>[] manosJugadores;
         public event Action<int> TurnoCambiado;
@@ -42,7 +68,7 @@ namespace UnoGame
             jugador4 = j4;
 
             InitializeComponent();
-            
+            CargarSonidos();
             iniciarTamanoDeBotones();
             iniciarColoresDeBotones();
             jugadores.Add(new Player(jugador1, Cartas1));
@@ -51,7 +77,9 @@ namespace UnoGame
             jugadores.Add(new Player(jugador4, Cartas4));
             manosJugadores = new List<Card>[] { Cartas1, Cartas2, Cartas3, Cartas4 };
             TurnoCambiado += MostrarTurno;
-            RepartirCartas();
+            timerReparto.Interval = 15;
+            timerReparto.Tick += TimerReparto_Tick;
+            this.Shown += (s, e) => RepartirCartas();
         }
         
         void Form1_FormClosing(object sender, FormClosingEventArgs e)
@@ -142,9 +170,9 @@ namespace UnoGame
             MostrarManoJugador();
             MostrarDescarte();
             MostrarBurra();
-            MostrarRival(panel_rival_arriba, idxArriba);
-            MostrarRival(panel_rival_izquierda, idxIzquierda);
-            MostrarRival(panel_rival_derecha, idxDerecha);
+            MostrarRival(panel_rival_arriba, idxArriba, RotateFlipType.Rotate180FlipNone, true);
+            MostrarRival(panel_rival_izquierda, idxIzquierda, RotateFlipType.Rotate90FlipNone, false);
+            MostrarRival(panel_rival_derecha, idxDerecha, RotateFlipType.Rotate270FlipNone, false); 
 
             // Indicadores de estado
             MostrarColorActivo();
@@ -162,7 +190,25 @@ namespace UnoGame
 
             button3.Visible = debeAparecer;
         }
+       
+        void CargarSonidos()
+        {
+            AgregarSonido("carta", Properties.Resources.carta);
+            AgregarSonido("boton", Properties.Resources.boton);
+            AgregarSonido("error", Properties.Resources.error);
+            AgregarSonido("comodin", Properties.Resources.comodina);
+            AgregarSonido("victoria", Properties.Resources.victoria);
+     
+        
+         
+        }
 
+        void AgregarSonido(string nombre, Stream flujo)
+        {
+            SoundPlayer sp = new SoundPlayer(flujo);
+            sp.Load();
+            sonidos[nombre] = sp;
+        }
         private void MostrarColorActivo()
         {
             Color c;
@@ -186,21 +232,33 @@ namespace UnoGame
                 labelSentido.Text = "Sentido: Derecha";
         }
 
-        private void MostrarRival(Panel panel, int indiceJugador)
+        private void MostrarRival(Panel panel, int indiceJugador, RotateFlipType giro, bool horizontal)
         {
+
             panel.Controls.Clear();
             int cantidad = jugadores[indiceJugador].cantidad_cartas;
 
-            int x = 5;
+            int pos = 5;
             for (int i = 0; i < cantidad; i++)
             {
                 CartaControl cc = new CartaControl();
                 cc.BocaAbajo = true;
-                cc.Size = new Size(40, 60); // más chicas para que quepan varias
-                cc.Location = new Point(x, 5);
-                panel.Controls.Add(cc);
-                cc.BringToFront();
-                x += 15; // se van sobreponiendo, como un abanico
+                cc.Size = new Size(40, 60);
+
+                Bitmap bmp = new Bitmap(cc.Width, cc.Height);
+                cc.DrawToBitmap(bmp, new Rectangle(0, 0, cc.Width, cc.Height));
+                bmp.RotateFlip(giro);
+                cc.Dispose();
+
+                PictureBox pb = new PictureBox();
+                pb.Image = bmp;
+                pb.Size = bmp.Size;
+                pb.BackColor = Color.Transparent;
+                pb.Location = horizontal ? new Point(pos, 5) : new Point(5, pos);
+
+                panel.Controls.Add(pb);
+                pb.BringToFront();
+                pos += 15; // se sobreponen como abanico
             }
         }
 
@@ -250,13 +308,18 @@ namespace UnoGame
                 cc.Location = new Point(x, 10);
 
                 Card cartaCapturada = carta; // evita el problema de captura en el foreach
-                cc.Click += (s, e) => IntentarJugarCarta(cartaCapturada);
+                cc.Click += (s, e) => IntentarJugarCarta(cartaCapturada, cc);
 
                 panel_mano_jugador1.Controls.Add(cc);
                 x += separacionReal;
             }
         }
-
+        void Sonar(string nombre)
+        {
+            SoundPlayer sp;
+            if (sonidos.TryGetValue(nombre, out sp))
+                sp.Play();
+        }
         private void MostrarDescarte()
         {
             panelDescarte.Controls.Clear();
@@ -285,8 +348,9 @@ namespace UnoGame
             }
         }
 
-        private void IntentarJugarCarta(Card cartaElegida)
+        private void IntentarJugarCarta(Card cartaElegida, CartaControl origen = null)
         {
+            if (repartiendo || robando || comiendo) return;
             if (cartaPendiente != null) return;
             if (partidaTerminada)
             {
@@ -296,24 +360,50 @@ namespace UnoGame
 
             if (!JugadaValida(cartaElegida))
             {
+                
                 MessageBox.Show("Esa carta no es una jugada válida.");
                 return;
             }
 
             if (cartaElegida.Type == CardType.Comodin || cartaElegida.Type == CardType.Mas4)
             {
+                Sonar("comodin");
                 cartaPendiente = cartaElegida;
+                controlPendiente = origen;
                 esCartaRobada = false;
                 SeleccionColor_Rojo.Visible = true;
                 SeleccionColor_Azul.Visible = true;
                 SeleccionColor_Amarillo.Visible = true;
                 SeleccionColor_Verde.Visible = true;
-
-                return; 
+                return;
             }
 
-            // Si es una carta normal, se juega directamente
-            JugarCarta(cartaElegida, CardColor.Ninguno);
+            JugarConAnimacion(origen, cartaElegida, CardColor.Ninguno);
+        }
+        private void JugarConAnimacion(CartaControl origen, Card carta, CardColor color)
+        {
+            // Sin control de origen (o ya redibujado): se juega directo
+            if (origen == null || origen.IsDisposed || origen.Parent == null)
+            {
+                JugarCarta(carta, color);
+                return;
+            }
+
+            Point desde = this.PointToClient(origen.Parent.PointToScreen(origen.Location));
+
+            CartaControl cc = new CartaControl();
+            cc.Carta = carta;
+            cc.BocaAbajo = false;
+            cc.EsJugable = true;
+            cartaVolando = cc;
+
+            origen.Visible = false;   // la carta sale de la mano
+            robando = true;           // bloquea clics mientras vuela
+            pausa = 0;
+
+            alAterrizar = () => JugarCarta(carta, color);
+            IniciarVuelo(panelDescarte, new Point(5, 5), desde);
+            timerReparto.Start();
         }
         void CallUno(Player jugador)
         {
@@ -402,6 +492,7 @@ namespace UnoGame
                 }
                 else
                 {
+                  
                     MessageBox.Show($"{jugadores[turno].Nombre} no dijo UNO, come 2 cartas.");
                     for (int i = 0; i < 2; i++)
                         jugadores[turno].Agregar_carta(SacarCarta());
@@ -423,26 +514,20 @@ namespace UnoGame
                 AvanzarTurno();
             }
 
-            if (cartaJugada.Type == CardType.Mas2)
+            if (cartaJugada.Type == CardType.Mas2 || cartaJugada.Type == CardType.Mas4)
             {
+                int cantidad = (cartaJugada.Type == CardType.Mas2) ? 2 : 4;
                 int siguienteJugador = (turno + sentido + numJugadores) % numJugadores;
-                for (int i = 0; i < 2; i++)
-                {
-                    jugadores[siguienteJugador].Agregar_carta(SacarCarta());
-                }
-                MessageBox.Show($"{jugadores[siguienteJugador].Nombre} come 2 cartas.");
-                AvanzarTurno();
-            }
 
-            if (cartaJugada.Type == CardType.Mas4)
-            {
-                int siguienteJugador = (turno + sentido + numJugadores) % numJugadores;
-                for (int i = 0; i < 4; i++)
+                ActualizarVista();   // que la carta jugada ya se vea en el descarte antes de comer
+
+                ComerConAnimacion(siguienteJugador, cantidad, () =>
                 {
-                    jugadores[siguienteJugador].Agregar_carta(SacarCarta());
-                }
-                MessageBox.Show($"{jugadores[siguienteJugador].Nombre} come 4 cartas.");
-                AvanzarTurno();
+                    MessageBox.Show($"{jugadores[siguienteJugador].Nombre} come {cantidad} cartas.");
+                    AvanzarTurno();   // el que comió pierde su turno
+                    AvanzarTurno();
+                });
+                return;
             }
 
             AvanzarTurno();
@@ -451,7 +536,7 @@ namespace UnoGame
         public bool JugadaValida(Card cartaJugada)
         {
             Card ultimaCarta = VerCartaSuperior();
-         
+            if (ultimaCarta == null) return false;
 
             if (cartaJugada.Type == CardType.Comodin || cartaJugada.Type == CardType.Mas4)
                 return true;
@@ -508,6 +593,7 @@ namespace UnoGame
 
         private void TerminarPartida(Player ganador)
         {
+            Sonar("victoria");
             partidaTerminada = true;
             FormFinPartida formFin = new FormFinPartida();
             formFin.MostrarGanador(ganador.Nombre);
@@ -610,6 +696,7 @@ namespace UnoGame
 
         private void TomarCartaYIntentarJugar(string nombreJugadorActual)
         {
+            if (repartiendo || robando || comiendo) return;
             if (cartaPendiente != null) return;
             if (partidaTerminada)
             {
@@ -621,36 +708,76 @@ namespace UnoGame
 
             if (cartaRobada == null)
             {
+              
                 MessageBox.Show("No quedan cartas para robar.");
                 AvanzarTurno();
                 return;
             }
 
-            if (JugadaValida(cartaRobada))
+            robando = true;
+
+            CartaControl cc = new CartaControl();
+            cc.Carta = cartaRobada;
+            cc.BocaAbajo = false;
+            cc.EsJugable = JugadaValida(cartaRobada);
+            cartaVolando = cc;
+
+            bool esComodin = cartaRobada.Type == CardType.Comodin || cartaRobada.Type == CardType.Mas4;
+            bool seJuegaSola = JugadaValida(cartaRobada);
+
+            pausa = 0;
+
+            if (esComodin)
             {
-            
-                if (cartaRobada.Type == CardType.Comodin || cartaRobada.Type == CardType.Mas4)
+                // Vuela al descarte y, al llegar, pide el color (la carta se queda a la vista)
+                alAterrizar = () =>
                 {
-                    MessageBox.Show($"{nombreJugadorActual} robó un comodín y se jugó automáticamente.");
+                    Sonar("comodin");
                     cartaPendiente = cartaRobada;
+                    controlPendiente = null;
                     esCartaRobada = true;
+                    esperandoColorRobada = true;
+
                     SeleccionColor_Rojo.Visible = true;
                     SeleccionColor_Azul.Visible = true;
                     SeleccionColor_Amarillo.Visible = true;
                     SeleccionColor_Verde.Visible = true;
-                    return; 
-                }
 
-                MessageBox.Show($"{nombreJugadorActual} robó {cartaRobada} y se jugó automáticamente.");
-                jugadores[turno].Agregar_carta(cartaRobada);
-                JugarCarta(cartaRobada, CardColor.Ninguno);
+                    // que la carta que vuela no tape los botones
+                    SeleccionColor_Rojo.BringToFront();
+                    SeleccionColor_Azul.BringToFront();
+                    SeleccionColor_Amarillo.BringToFront();
+                    SeleccionColor_Verde.BringToFront();
+                };
+                IniciarVuelo(panelDescarte, new Point(5, 5));
+            }
+            else if (seJuegaSola)
+            {
+                alAterrizar = () =>
+                {
+                    jugadores[turno].Agregar_carta(cartaRobada);
+                    JugarCarta(cartaRobada, CardColor.Ninguno);
+                };
+                IniciarVuelo(panelDescarte, new Point(5, 5));
             }
             else
             {
-                jugadores[turno].Agregar_carta(cartaRobada);
-                MessageBox.Show($"{nombreJugadorActual} robó {cartaRobada} y no es jugable, se la queda.");
-                AvanzarTurno();
+                int n = jugadores[turno].cantidad_cartas;
+                int x = 10 + n * SeparacionMano(n + 1);
+                x = Math.Min(x, panel_mano_jugador1.Width - 80);
+
+                alAterrizar = () => ResolverCartaRobada(cartaRobada, nombreJugadorActual);
+                IniciarVuelo(panel_mano_jugador1, new Point(x, 10));
             }
+
+            timerReparto.Start();
+        }
+
+        private void ResolverCartaRobada(Card cartaRobada, string nombreJugadorActual)
+        {
+            jugadores[turno].Agregar_carta(cartaRobada);
+            MessageBox.Show($"{nombreJugadorActual} robó {cartaRobada} y no es jugable, se la queda.");
+            AvanzarTurno();
         }
 
         private CardColor PedirColor()
@@ -702,6 +829,8 @@ namespace UnoGame
             {
                 if (carta != null)
                 {
+                    
+                   
                     mano.Add(carta);
                     DijoUno = false;
                 }
@@ -713,36 +842,292 @@ namespace UnoGame
         }
         private void RepartirCartas()
         {
+            timerReparto.Stop();
+            comiendo = false;
+            comerRestantes = 0;
+            alTerminarComer = null;
+            QuitarCartaVolando();
+            pausa = 0;
+            repartiendo = true;
+            repartoRonda = 0;
+            repartoJugador = 0;
             partidaTerminada = false;
 
             Cartas1.Clear();
             Cartas2.Clear();
             Cartas3.Clear();
             Cartas4.Clear();
+            descarte.Clear();
 
             BarajarMazo();
 
-            foreach (Player jugador in jugadores)
-            {
-                for (int i = 0; i < 7; i++)
-                {
-                    jugador.Agregar_carta(SacarCarta());
-                }
-            }
-            ultimaCarta = SacarCarta();
+            panel_mano_jugador1.Controls.Clear();
+            panel_rival_arriba.Controls.Clear();
+            panel_rival_izquierda.Controls.Clear();
+            panel_rival_derecha.Controls.Clear();
+            panelDescarte.Controls.Clear();
+            MostrarBurra();
 
-            // Si la primera carta es Comodín +4, se devuelve al mazo, se barajea junto con lo que queda y se voltea otra
-            while (ultimaCarta != null && ultimaCarta.Type == CardType.Mas4)
+            timerReparto.Start();
+        }
+        private void TimerReparto_Tick(object sender, EventArgs e)
+        {
+            if (IsDisposed) { timerReparto.Stop(); return; }
+
+            if (pausa > 0) { pausa--; return; }
+
+            // Carta volando: avanzarla un paso hacia su punto final
+            if (cartaVolando != null)
             {
-                DevolverYBarajar(ultimaCarta);
-                ultimaCarta = SacarCarta();
+                pasoVuelo++;
+                cartaVolando.Location = new Point(
+    inicioVuelo.X + (destinoVuelo.X - inicioVuelo.X) * pasoVuelo / PASOS_VUELO,
+    inicioVuelo.Y + (destinoVuelo.Y - inicioVuelo.Y) * pasoVuelo / PASOS_VUELO);
+
+                if (pasoVuelo < PASOS_VUELO) return;
+                Sonar("carta");
+                // Aterrizó: carta robada (se queda a la vista mientras se resuelve)
+                if (alAterrizar != null)
+                {
+                    timerReparto.Stop();
+                    Action accion = alAterrizar;
+                    alAterrizar = null;
+                    accion();
+                    if (alAterrizar == null && !esperandoColorRobada)   // CAMBIO
+                    {
+                        QuitarCartaVolando();
+                        robando = false;
+                    }
+                    return;
+                }
+
+                QuitarCartaVolando();
+
+                // Aterrizó: carta que se come por +2 / +4
+                if (comiendo)
+                {
+                    jugadores[comerJugador].Agregar_carta(cartaEnVuelo);
+                    DibujarCartaRepartida(comerJugador);
+                    cartaEnVuelo = null;
+                    comerRestantes--;
+                    pausa = TICKS_PAUSA / 2;
+                    return;
+                }
+
+                // Aterrizó: carta del reparto
+                if (repartoRonda < 7)
+                {
+                    jugadores[repartoJugador].Agregar_carta(cartaEnVuelo);
+                    DibujarCartaRepartida(repartoJugador);
+
+                    repartoJugador++;
+                    if (repartoJugador == numJugadores)
+                    {
+                        repartoJugador = 0;
+                        repartoRonda++;
+                    }
+                }
+                else
+                {
+                    descarte.Push(cartaEnVuelo);
+                    colorActivo = cartaEnVuelo.Color;
+                    MostrarDescarte();
+                    repartoRonda++;
+                }
+
+                cartaEnVuelo = null;
+                pausa = TICKS_PAUSA;
+                return;
             }
-            descarte.Clear();
-            descarte.Push(ultimaCarta);
-            colorActivo = ultimaCarta.Color;
-            ActualizarVista();
+
+            // Sin carta volando
+            if (comiendo)
+            {
+                bool hayCartas = burra.Count > 0 || descarte.Count > 1;
+                if (comerRestantes > 0 && hayCartas)
+                {
+                    LanzarCarta(comerJugador);
+                }
+                else
+                {
+                    timerReparto.Stop();
+                    comiendo = false;
+                    comerRestantes = 0;
+                    Action fin = alTerminarComer;
+                    alTerminarComer = null;
+                    if (fin != null) fin();
+                }
+                return;
+            }
+
+            if (repartoRonda < 7)
+            {
+                LanzarCarta(repartoJugador);
+            }
+            else if (repartoRonda == 7)
+            {
+                LanzarCartaInicial();
+            }
+            else
+            {
+                timerReparto.Stop();
+                repartiendo = false;
+                ActualizarVista();
+            }
+        }
+        private void ComerConAnimacion(int jugador, int cantidad, Action alTerminar)
+        {
+            comiendo = true;
+            comerJugador = jugador;
+            comerRestantes = cantidad;
+            alTerminarComer = alTerminar;
+            pausa = 0;
+            timerReparto.Start();
+        }
+        private int PosicionDeJugador(int j)
+        {
+            // 0 abajo, 1 izquierda, 2 arriba, 3 derecha
+            return (((j - turno) * sentido) % numJugadores + numJugadores) % numJugadores;
         }
 
+        private Panel PanelDeJugador(int j)
+        {
+            Panel[] porPosicion = { panel_mano_jugador1, panel_rival_izquierda,
+                            panel_rival_arriba, panel_rival_derecha };
+            return porPosicion[PosicionDeJugador(j)];
+        }
+
+        // Misma separación que calcula MostrarManoJugador
+        private int SeparacionMano(int cantidad)
+        {
+            int anchoCarta = 70, separacion = 75, separacionMinima = 40;
+            if (cantidad <= 1) return separacion;
+            int espacio = panel_mano_jugador1.Width - anchoCarta;
+            int real = Math.Min(separacion, espacio / (cantidad - 1));
+            return Math.Max(real, separacionMinima);
+        }
+
+        private void LanzarCarta(int j)
+        {
+            cartaEnVuelo = SacarCarta();
+            int pos = PosicionDeJugador(j);
+            Panel destino = PanelDeJugador(j);
+            int n = jugadores[j].cantidad_cartas;   // la nueva carta será la número n
+            Point local;
+
+            if (pos == 0)
+            {
+                // Mano: boca arriba, tamaño completo, en su lugar exacto
+                local = new Point(10 + n * SeparacionMano(n + 1), 10);
+
+                CartaControl cc = new CartaControl();
+                cc.Carta = cartaEnVuelo;
+                cc.BocaAbajo = false;
+                cartaVolando = cc;
+            }
+            else
+            {
+                // Rivales: reverso girado igual que en su abanico
+                RotateFlipType giro = (pos == 1) ? RotateFlipType.Rotate90FlipNone
+                                    : (pos == 2) ? RotateFlipType.Rotate180FlipNone
+                                                 : RotateFlipType.Rotate270FlipNone;
+                bool horizontal = (pos == 2);
+                int offset = 5 + 15 * n;
+                local = horizontal ? new Point(offset, 5) : new Point(5, offset);
+
+                cartaVolando = CrearReversoGirado(giro, destino.BackColor);
+            }
+
+            IniciarVuelo(destino, local);
+        }
+
+        private void LanzarCartaInicial()
+        {
+            cartaEnVuelo = SacarCarta();
+            while (cartaEnVuelo != null && cartaEnVuelo.Type == CardType.Mas4)
+            {
+                DevolverYBarajar(cartaEnVuelo);
+                cartaEnVuelo = SacarCarta();
+            }
+
+            CartaControl cc = new CartaControl();
+            cc.Carta = cartaEnVuelo;
+            cc.BocaAbajo = false;
+            cartaVolando = cc;
+
+            IniciarVuelo(panelDescarte, new Point(5, 5));   // donde la dibuja MostrarDescarte
+        }
+
+        private PictureBox CrearReversoGirado(RotateFlipType giro, Color fondo)
+        {
+            CartaControl cc = new CartaControl();
+            cc.BocaAbajo = true;
+            cc.Size = new Size(40, 60);
+            cc.BackColor = fondo;
+
+            Bitmap bmp = new Bitmap(cc.Width, cc.Height);
+            cc.DrawToBitmap(bmp, new Rectangle(0, 0, cc.Width, cc.Height));
+            bmp.RotateFlip(giro);
+            cc.Dispose();
+
+            PictureBox pb = new PictureBox();
+            pb.Image = bmp;
+            pb.Size = bmp.Size;
+            pb.BackColor = Color.Transparent;
+            return pb;
+        }
+
+        private void IniciarVuelo(Panel destino, Point local, Point? desde = null)
+        {
+            inicioVuelo = desde ?? origenVuelo;
+            cartaVolando.Location = inicioVuelo;
+            destinoVuelo = this.PointToClient(destino.PointToScreen(local));
+            pasoVuelo = 0;
+
+            this.Controls.Add(cartaVolando);
+            cartaVolando.BringToFront();
+        }
+
+        private void QuitarCartaVolando()
+        {
+
+            esperandoColorRobada = false;   // NUEVO
+            if (cartaVolando == null) return;
+            alAterrizar = null;
+            robando = false;
+            Control c = cartaVolando;
+            cartaVolando = null;
+
+            PictureBox pb = c as PictureBox;
+            Image img = null;
+            if (pb != null)
+            {
+                img = pb.Image;
+                pb.Image = null;      // el control ya no apunta a la imagen
+            }
+
+            this.Controls.Remove(c);
+            c.Dispose();
+
+            if (img != null) img.Dispose();   // ahora sí es seguro liberarla
+        }
+        private void DibujarCartaRepartida(int j)
+        {
+            // 0 abajo, 1 izquierda, 2 arriba, 3 derecha
+            int pos = (((j - turno) * sentido) % numJugadores + numJugadores) % numJugadores;
+
+            switch (pos)
+            {
+                case 0: MostrarManoJugador(); break;
+                case 1: MostrarRival(panel_rival_izquierda, j, RotateFlipType.Rotate90FlipNone, false); break;
+                case 2: MostrarRival(panel_rival_arriba, j, RotateFlipType.Rotate180FlipNone, true); break;
+                case 3: MostrarRival(panel_rival_derecha, j, RotateFlipType.Rotate270FlipNone, false); break;
+            }
+
+            Label[] etiquetas = { label_jugador1, label_jugador2, label_jugador3, label_jugador4 };
+            etiquetas[pos].Text = jugadores[j].Nombre + ": " + jugadores[j].cantidad_cartas + " cartas";
+            labelBurra.Text = "Burra: " + CartasRestantes();
+        }
         private void DevolverYBarajar(Card carta)
         {
             List<Card> restante = new List<Card>(burra);
@@ -872,30 +1257,59 @@ private void SeleccionColor_Verde_Click(object sender, EventArgs e)
 
         private void button3_Click(object sender, EventArgs e)
         {
+            Sonar("boton");
             CallUno(jugadores[turno]);
             button3.Visible = false;
         }
 
         private void ColorSeleccionado(CardColor colorElegido)
-{
-    OcultarSelectorColor();
-
-    if (cartaPendiente != null)
-    {
-        Card cartaAProcesar = cartaPendiente;
-        cartaPendiente = null;
-
-        if (esCartaRobada)
         {
-            esCartaRobada = false;
-            jugadores[turno].Agregar_carta(cartaAProcesar);
+            Sonar("boton");
+            OcultarSelectorColor();
+
+            if (cartaPendiente != null)
+            {
+                Card cartaAProcesar = cartaPendiente;
+                cartaPendiente = null;
+
+                if (esCartaRobada)
+                {
+                    esCartaRobada = false;
+                    QuitarCartaVolando();   // quita la carta que esperaba sobre el descarte
+                    jugadores[turno].Agregar_carta(cartaAProcesar);
+                    JugarCarta(cartaAProcesar, colorElegido);
+                }
+                else
+                {
+                    CartaControl origen = controlPendiente;
+                    controlPendiente = null;
+                    JugarConAnimacion(origen, cartaAProcesar, colorElegido);
+                }
+            }
         }
 
-        JugarCarta(cartaAProcesar, colorElegido);
-    }
-}
+        // NUEVO: la carta robada vuela de la burra al descarte y se juega al aterrizar
+        private void VolarRobadaAlDescarte(Card carta, CardColor color)
+        {
+            CartaControl cc = new CartaControl();
+            cc.Carta = carta;
+            cc.BocaAbajo = false;
+            cc.EsJugable = true;
+            cartaVolando = cc;
 
-        
+            robando = true;   // bloquea clics mientras vuela
+            pausa = 0;
+
+            alAterrizar = () =>
+            {
+                jugadores[turno].Agregar_carta(carta);
+                JugarCarta(carta, color);
+            };
+            IniciarVuelo(panelDescarte, new Point(5, 5));
+            timerReparto.Start();
+        }
+
+
         void iniciarColoresDeBotones() // son botones rgb  no salen en la paleta de colores predeterminada
         {
             
