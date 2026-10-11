@@ -119,21 +119,24 @@ namespace UnoGame
 
         Card SacarCarta()
         {
-            if (burra.Count > 0)
-            {
-                return burra.Pop();
-            }
-            else
-            { 
+            if (burra.Count == 0)
                 ReponerMazo();
-                if(burra.Count > 0)
-                {
-                    return burra.Pop();
-                }
+
+            if (burra.Count == 0)
+            {
+                MostrarBurra();
+                return null;
             }
-            return null;
+
+            Card carta = burra.Pop();
+
+            if (burra.Count == 0)
+                AlAcabarseLaBurra();
+
+            MostrarBurra();
+            return carta;
         }
-      
+
         void MostrarTurno(int t)
         {
             ActualizarVista();
@@ -406,19 +409,19 @@ namespace UnoGame
                 panelDescarte.Controls.Add(cc);
             }
         }
-
+        
         private void MostrarBurra()
         {
             panelBurra.Controls.Clear();
-            if (!partidaTerminada && CartasRestantes() > 0)
-            {
-                CartaControl cc = new CartaControl();
-                cc.BocaAbajo = true;
-                cc.Location = new Point(5, 5);
-                cc.Click += (s, e) => TomarCartaYIntentarJugar(jugadores[turno].Nombre);
-                cc.Cursor = Cursors.Hand;
-                panelBurra.Controls.Add(cc);
-            }
+
+            if (partidaTerminada) return;
+
+            CartaControl cc = new CartaControl();
+            cc.BocaAbajo = true;
+            cc.Location = new Point(5, 5);
+            cc.Cursor = Cursors.Hand;
+            cc.Click += (s, e) => TomarCartaYIntentarJugar(jugadores[turno].Nombre);
+            panelBurra.Controls.Add(cc);
         }
 
         private void IntentarJugarCarta(Card cartaElegida, CartaControl origen = null)
@@ -692,7 +695,32 @@ namespace UnoGame
                     burra.Push(c);
             }
         }
+        private void MostrarAviso(string mensaje)
+        {
+            if (IsDisposed) return;
+            bool corria = timerReparto.Enabled;
+            timerReparto.Stop();
+            MessageBox.Show(mensaje, "Burra");
+            if (corria && !IsDisposed) timerReparto.Start();
+        }
 
+
+        private void AlAcabarseLaBurra()
+        {
+            string mensaje;
+            if (descarte.Count > 1)
+            {
+                ReponerMazo();   //BARAJEAR BURRA
+                mensaje = "Se acabó la burra. Se barajó el descarte para formar una nueva.";
+            }
+            else
+            {
+                mensaje = "Se acabó la burra y no hay cartas en el descarte para reponerla.";
+            }
+
+
+            this.BeginInvoke(new Action(() => MostrarAviso(mensaje)));
+        }
 
         private async void TerminarPartida(Player ganador)
         {
