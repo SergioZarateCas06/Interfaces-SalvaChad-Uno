@@ -361,3 +361,6 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# UnoApi - variables de entorno con credenciales
+UnoApi/.env
