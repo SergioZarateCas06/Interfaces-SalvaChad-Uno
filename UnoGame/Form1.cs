@@ -801,10 +801,24 @@ namespace UnoGame
             timerReparto.Start();
         }
 
-        private void ResolverCartaRobada(Card cartaRobada, string nombreJugadorActual)
+        private async void ResolverCartaRobada(Card cartaRobada, string nombreJugadorActual)
         {
             jugadores[turno].Agregar_carta(cartaRobada);
             MessageBox.Show($"{nombreJugadorActual} robó {cartaRobada} y no es jugable, se la queda.");
+
+            numeroTurnoActual++;
+            if (partidaIdActual != -1)
+            {
+                try
+                {
+                    await api.RegistrarMovimiento(partidaIdActual, numeroTurnoActual, nombreJugadorActual, "Robar", cartaRobada.ToString());
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("No se pudo registrar el movimiento: " + ex.Message);
+                }
+            }
+
             AvanzarTurno();
         }
 

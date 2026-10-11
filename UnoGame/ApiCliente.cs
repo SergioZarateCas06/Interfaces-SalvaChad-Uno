@@ -56,5 +56,79 @@ namespace UnoGame
             HttpResponseMessage respuesta = await cliente.PutAsync($"{BaseUrl}/partidas/{partidaId}/ganador", contenido);
             respuesta.EnsureSuccessStatusCode();
         }
+
+        // GET /historial
+        public async Task<List<HistorialItem>> ObtenerHistorial()
+        {
+            string json = await cliente.GetStringAsync($"{BaseUrl}/historial");
+            return JsonSerializer.Deserialize<List<HistorialItem>>(json);
+        }
+
+        // GET /estadisticas
+        // GET /estadisticas
+        public async Task<List<EstadisticaJugador>> ObtenerEstadisticas()
+        {
+            string json = await cliente.GetStringAsync($"{BaseUrl}/estadisticas");
+            return JsonSerializer.Deserialize<List<EstadisticaJugador>>(json);
+        }
+
+        // GET /partidas/{partida_id}/movimientos
+        public async Task<List<MovimientoItem>> ObtenerMovimientos(int partidaId)
+        {
+            string json = await cliente.GetStringAsync($"{BaseUrl}/partidas/{partidaId}/movimientos");
+            return JsonSerializer.Deserialize<List<MovimientoItem>>(json);
+        }
+    }
+
+    public class HistorialItem
+    {
+        [System.Text.Json.Serialization.JsonPropertyName("partida_id")]
+        public int PartidaId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("fecha")]
+        public string Fecha { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("nombre_jugador")]
+        public string NombreJugador { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("gano")]
+        public int GanoNumero { get; set; }
+
+        public bool Gano => GanoNumero != 0;
+    }
+    public class EstadisticaJugador
+    {
+        [System.Text.Json.Serialization.JsonPropertyName("nombre_jugador")]
+        public string NombreJugador { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("victorias")]
+        public int Victorias { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("derrotas")]
+        public int Derrotas { get; set; }
+    }
+
+    public class MovimientoItem
+    {
+        [System.Text.Json.Serialization.JsonPropertyName("id")]
+        public int Id { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("partida_id")]
+        public int PartidaId { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("numero_turno")]
+        public int NumeroTurno { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("nombre_jugador")]
+        public string NombreJugador { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("accion")]
+        public string Accion { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("descripcion_carta")]
+        public string DescripcionCarta { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("fecha")]
+        public string Fecha { get; set; }
     }
 }

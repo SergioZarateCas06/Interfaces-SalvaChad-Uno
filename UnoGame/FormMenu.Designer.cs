@@ -86,6 +86,7 @@
             this.MaximizeBox = false;
             this.Name = "FormMenu";
             this.Text = "Menú Principal";
+            this.Load += new System.EventHandler(this.FormMenu_Load);
             ((System.ComponentModel.ISupportInitialize)(this.pbSalir)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbHistorial)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbNuevaPartida)).EndInit();
