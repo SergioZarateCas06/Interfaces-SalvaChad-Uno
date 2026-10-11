@@ -64,7 +64,7 @@ namespace UnoGame
         private int numeroTurnoActual = 0;
         private bool cierreForzado = false;
         Card cartaPendiente = null;
-         bool esCartaRobada = false;
+        bool esCartaRobada = false;
         Size tamanoOriginalBoton;
         Point locRojo, locAzul, locAmarillo, locVerde;
         public Form1(String j1, String j2, String j3, String j4)

@@ -24,6 +24,6 @@ CREATE TABLE Movimientos (
     fecha DATETIME NOT NULL
 );
 
-CREATE USER 'uno_api'@'localhost' IDENTIFIED BY 'CAMBIA_ESTA_CLAVE';
+CREATE USER 'uno_api'@'localhost' IDENTIFIED BY 'hanasatominori'; -- Despues del IDENTIFIED BY se pone la contraseña del usuario
 GRANT ALL PRIVILEGES ON unogameproyecto.* TO 'uno_api'@'localhost';
 FLUSH PRIVILEGES;

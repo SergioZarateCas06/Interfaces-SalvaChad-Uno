@@ -62,7 +62,7 @@ namespace UnoGame
             this.DoubleBuffered = true;
             this.Size = new Size(70, 100);
             this.Cursor = Cursors.Hand;
-
+            
             this.MouseEnter += CartaControl_MouseEnter;
             this.MouseLeave += CartaControl_MouseLeave;
         }
