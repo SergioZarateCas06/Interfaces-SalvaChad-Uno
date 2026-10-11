@@ -22,6 +22,7 @@ namespace UnoGame
             this.Type = cardType;
         }
 
+
         public override string ToString()
         {
             switch (this.Type)

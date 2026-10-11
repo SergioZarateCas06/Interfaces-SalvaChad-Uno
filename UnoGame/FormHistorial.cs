@@ -14,15 +14,6 @@ namespace UnoGame
             InitializeComponent();
         }
 
-        private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
-        {
-
-        }
-
-        private void label2_Click(object sender, EventArgs e)
-        {
-
-        }
 
         private async void FormHistorial_Load(object sender, EventArgs e)
         {
