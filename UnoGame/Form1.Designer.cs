@@ -59,28 +59,28 @@
             // panel_rival_izquierda
             // 
             this.panel_rival_izquierda.BackColor = System.Drawing.Color.Transparent;
-            this.panel_rival_izquierda.Location = new System.Drawing.Point(20, 250);
+            this.panel_rival_izquierda.Location = new System.Drawing.Point(12, 190);
             this.panel_rival_izquierda.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.panel_rival_izquierda.Name = "panel_rival_izquierda";
-            this.panel_rival_izquierda.Size = new System.Drawing.Size(150, 200);
+            this.panel_rival_izquierda.Size = new System.Drawing.Size(150, 260);
             this.panel_rival_izquierda.TabIndex = 6;
             // 
             // panel_rival_arriba
             // 
             this.panel_rival_arriba.BackColor = System.Drawing.Color.Transparent;
-            this.panel_rival_arriba.Location = new System.Drawing.Point(420, 20);
+            this.panel_rival_arriba.Location = new System.Drawing.Point(362, 20);
             this.panel_rival_arriba.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.panel_rival_arriba.Name = "panel_rival_arriba";
-            this.panel_rival_arriba.Size = new System.Drawing.Size(399, 100);
+            this.panel_rival_arriba.Size = new System.Drawing.Size(557, 100);
             this.panel_rival_arriba.TabIndex = 7;
             // 
             // panel_rival_derecha
             // 
             this.panel_rival_derecha.BackColor = System.Drawing.Color.Transparent;
-            this.panel_rival_derecha.Location = new System.Drawing.Point(1060, 250);
+            this.panel_rival_derecha.Location = new System.Drawing.Point(1070, 190);
             this.panel_rival_derecha.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.panel_rival_derecha.Name = "panel_rival_derecha";
-            this.panel_rival_derecha.Size = new System.Drawing.Size(150, 200);
+            this.panel_rival_derecha.Size = new System.Drawing.Size(150, 260);
             this.panel_rival_derecha.TabIndex = 8;
             // 
             // panelBurra
@@ -140,7 +140,7 @@
             // 
             this.label_Mano_jugador.AutoSize = true;
             this.label_Mano_jugador.BackColor = System.Drawing.Color.White;
-            this.label_Mano_jugador.Location = new System.Drawing.Point(325, 462);
+            this.label_Mano_jugador.Location = new System.Drawing.Point(260, 463);
             this.label_Mano_jugador.Name = "label_Mano_jugador";
             this.label_Mano_jugador.Size = new System.Drawing.Size(60, 16);
             this.label_Mano_jugador.TabIndex = 11;
@@ -149,10 +149,10 @@
             // panel_mano_jugador1
             // 
             this.panel_mano_jugador1.BackColor = System.Drawing.Color.Transparent;
-            this.panel_mano_jugador1.Location = new System.Drawing.Point(308, 481);
+            this.panel_mano_jugador1.Location = new System.Drawing.Point(263, 481);
             this.panel_mano_jugador1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.panel_mano_jugador1.Name = "panel_mano_jugador1";
-            this.panel_mano_jugador1.Size = new System.Drawing.Size(699, 210);
+            this.panel_mano_jugador1.Size = new System.Drawing.Size(735, 210);
             this.panel_mano_jugador1.TabIndex = 12;
             // 
             // panelColor
@@ -194,12 +194,13 @@
             // 
             this.label_jugador2.AutoSize = true;
             this.label_jugador2.BackColor = System.Drawing.Color.White;
-            this.label_jugador2.Location = new System.Drawing.Point(17, 226);
+            this.label_jugador2.Location = new System.Drawing.Point(12, 161);
             this.label_jugador2.Name = "label_jugador2";
             this.label_jugador2.Size = new System.Drawing.Size(116, 16);
             this.label_jugador2.TabIndex = 18;
             this.label_jugador2.Text = "jugador 2: 7 cartas";
             this.label_jugador2.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.label_jugador2.Click += new System.EventHandler(this.label_jugador2_Click);
             // 
             // label_jugador3
             // 
@@ -216,7 +217,7 @@
             // 
             this.label_jugador4.AutoSize = true;
             this.label_jugador4.BackColor = System.Drawing.Color.White;
-            this.label_jugador4.Location = new System.Drawing.Point(1057, 227);
+            this.label_jugador4.Location = new System.Drawing.Point(1104, 161);
             this.label_jugador4.Name = "label_jugador4";
             this.label_jugador4.Size = new System.Drawing.Size(116, 16);
             this.label_jugador4.TabIndex = 20;

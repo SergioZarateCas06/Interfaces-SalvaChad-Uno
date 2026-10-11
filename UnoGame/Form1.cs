@@ -1,26 +1,27 @@
-﻿using System;
+﻿using Microsoft.VisualBasic;
+using NAudio.Wave;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
 using System.Drawing.Text;
-using System.Linq;
-using System.Windows.Forms;
-using Microsoft.VisualBasic;
 using System.IO;
+using System.Linq;
 using System.Media;
-using NAudio.Wave;
+using System.Windows.Forms;
 
 namespace UnoGame
 {
     public partial class Form1 : Form
     {
         Dictionary<string, SoundPlayer> sonidos = new Dictionary<string, SoundPlayer>();
-        WaveOutEvent salidaMusica;
         Mp3FileReader lectorMusica;
+        WaveOutEvent salidaMusica;
         bool silenciado = false;
         bool cerrando = false;
-
         String jugador1, jugador2, jugador3, jugador4;
         int numJugadores = 4;
         CartaControl controlPendiente;
@@ -278,16 +279,46 @@ namespace UnoGame
             int cantidad = jugadores[indiceJugador].cantidad_cartas;
 
             int pos = 5;
+            int anchoCartaMini = 40;
+            int separacionIdeal = 15;
+            int separacionMinima = 10; 
+
+            int espacioDisponible = (horizontal ? panel.Width : panel.Height) - anchoCartaMini;
+            int separacionReal;
+
+            if (cantidad > 1)
+            {
+                separacionReal = Math.Min(separacionIdeal, espacioDisponible / (cantidad - 1));
+                if (separacionReal < separacionMinima)
+                    separacionReal = separacionMinima;
+            }
+            else
+            {
+                separacionReal = separacionIdeal;
+            }
             for (int i = 0; i < cantidad; i++)
             {
-                CartaControl cc = new CartaControl();
-                cc.BocaAbajo = true;
-                cc.Size = new Size(40, 60);
+                Bitmap bmp = new Bitmap(40, 60, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                using (Graphics g = Graphics.FromImage(bmp))
+                {
+                    g.Clear(Color.Transparent);
+                    g.SmoothingMode = SmoothingMode.AntiAlias;
 
-                Bitmap bmp = new Bitmap(cc.Width, cc.Height);
-                cc.DrawToBitmap(bmp, new Rectangle(0, 0, cc.Width, cc.Height));
+                    Rectangle area = new Rectangle(1, 1, bmp.Width - 3, bmp.Height - 3);
+                    using (GraphicsPath path = CartaControl.RedondearRectangulo(area, 8))
+                    {
+                        Image imgReverso = CartaControl.ObtenerImagen("reverso");
+                        if (imgReverso != null)
+                        {
+                            CartaControl.DibujarImagenRecortada(g, path, imgReverso);
+                        }
+                        using (Pen pen = new Pen(Color.Black, 2))
+                        {
+                            g.DrawPath(pen, path);
+                        }
+                    }
+                }
                 bmp.RotateFlip(giro);
-                cc.Dispose();
 
                 PictureBox pb = new PictureBox();
                 pb.Image = bmp;
@@ -297,7 +328,7 @@ namespace UnoGame
 
                 panel.Controls.Add(pb);
                 pb.BringToFront();
-                pos += 15; // se sobreponen como abanico
+                pos += separacionReal; // se sobreponen como abanico
             }
         }
 
@@ -329,12 +360,14 @@ namespace UnoGame
 
             int anchoTotal = anchoCarta + (mano.Count - 1) * separacionReal;
             panel_mano_jugador1.AutoScroll = true;
-            if(anchoTotal > panel_mano_jugador1.Width)
+            if (anchoTotal > panel_mano_jugador1.Width)
             {
+                panel_mano_jugador1.AutoScroll = true;
                 panel_mano_jugador1.AutoScrollMinSize = new Size(anchoTotal, 0);
             }
             else
             {
+                panel_mano_jugador1.AutoScroll = false;
                 panel_mano_jugador1.AutoScrollMinSize = new Size(0, 0);
             }
             int x = 10;
@@ -346,8 +379,8 @@ namespace UnoGame
                 cc.EsJugable = JugadaValida(carta);
                 cc.Location = new Point(x, 10);
 
-                Card cartaCapturada = carta; // evita el problema de captura en el foreach
-                cc.Click += (s, e) => IntentarJugarCarta(cartaCapturada, cc);
+                Card cartaCapturada = carta;
+                cc.Click += (s, e) => IntentarJugarCarta(cartaCapturada);
 
                 panel_mano_jugador1.Controls.Add(cc);
                 x += separacionReal;
@@ -1399,6 +1432,11 @@ private void SeleccionColor_Verde_Click(object sender, EventArgs e)
         }
 
         private void buttonSilencio_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label_jugador2_Click(object sender, EventArgs e)
         {
 
         }
