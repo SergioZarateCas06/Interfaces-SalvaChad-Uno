@@ -13,10 +13,9 @@ namespace UnoGame
         private bool esJugable;
         private bool mouseEncima;
 
-
         private static readonly Dictionary<string, Image> cache = new Dictionary<string, Image>();
 
-        private static Image ObtenerImagen(string nombre)
+        internal static Image ObtenerImagen(string nombre)
         {
             if (nombre == null) return null;
 
@@ -45,7 +44,8 @@ namespace UnoGame
             }
             return null;
         }
-        private void DibujarImagenRecortada(Graphics g, GraphicsPath path, Image img)
+
+        internal static void DibujarImagenRecortada(Graphics g, GraphicsPath path, Image img)
         {
             RectangleF destino = path.GetBounds();
             GraphicsState estado = g.Save();
@@ -56,12 +56,22 @@ namespace UnoGame
             g.Restore(estado);
         }
 
+        protected override CreateParams CreateParams
+        {
+            get
+            {
+                CreateParams cp = base.CreateParams;
+                cp.ExStyle |= 0x00000020; // WS_EX_TRANSPARENT
+                return cp;
+            }
+        }
+
         public CartaControl()
         {
             InitializeComponent();
-            this.DoubleBuffered = true;
             this.Size = new Size(70, 100);
             this.Cursor = Cursors.Hand;
+            this.BackColor = Color.Transparent;
 
             this.MouseEnter += CartaControl_MouseEnter;
             this.MouseLeave += CartaControl_MouseLeave;
@@ -108,7 +118,6 @@ namespace UnoGame
 
             Rectangle area = new Rectangle(2, 2, this.Width - 5, this.Height - 5);
 
-            // Efecto al pasar el mouse o resaltar carta jugable: borde más grueso y de color
             int grosorBorde = 2;
             Color colorBorde = Color.Black;
 
@@ -120,7 +129,7 @@ namespace UnoGame
             if (mouseEncima)
             {
                 grosorBorde += 1;
-                area.Inflate(-2, -2); // simula que la carta "crece" un poco
+                area.Inflate(-2, -2);
             }
 
             using (GraphicsPath path = RedondearRectangulo(area, 10))
@@ -143,7 +152,6 @@ namespace UnoGame
 
         private void DibujarReverso(Graphics g, GraphicsPath path)
         {
-
             Image imgReverso = ObtenerImagen("reverso");
             if (imgReverso != null)
             {
@@ -173,7 +181,6 @@ namespace UnoGame
 
         private void DibujarCara(Graphics g, GraphicsPath path)
         {
-
             Image imgCara = ObtenerImagen(ObtenerNombreImagen(carta));
             if (imgCara != null)
             {
@@ -239,11 +246,11 @@ namespace UnoGame
                 case CardColor.Azul: return Color.RoyalBlue;
                 case CardColor.Verde: return Color.ForestGreen;
                 case CardColor.Amarillo: return Color.Goldenrod;
-                default: return Color.Black; // Comodines sin color aún elegido
+                default: return Color.Black;
             }
         }
 
-        private GraphicsPath RedondearRectangulo(Rectangle bounds, int radio)
+        internal static GraphicsPath RedondearRectangulo(Rectangle bounds, int radio)
         {
             GraphicsPath path = new GraphicsPath();
             int d = radio * 2;
