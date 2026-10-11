@@ -49,10 +49,11 @@
             this.SeleccionColor_Azul = new System.Windows.Forms.Button();
             this.SeleccionColor_Amarillo = new System.Windows.Forms.Button();
             this.SeleccionColor_Verde = new System.Windows.Forms.Button();
-            this.button3 = new System.Windows.Forms.Button();
             this.buttonSilencio = new System.Windows.Forms.Button();
+            this.botonUno = new System.Windows.Forms.PictureBox();
             this.panelBurra.SuspendLayout();
             this.panelDescarte.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.botonUno)).BeginInit();
             this.SuspendLayout();
             // 
             // panel_rival_izquierda
@@ -229,7 +230,7 @@
             this.SeleccionColor_Rojo.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
             this.SeleccionColor_Rojo.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.SeleccionColor_Rojo.Location = new System.Drawing.Point(431, 172);
-            this.SeleccionColor_Rojo.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.SeleccionColor_Rojo.Margin = new System.Windows.Forms.Padding(4);
             this.SeleccionColor_Rojo.Name = "SeleccionColor_Rojo";
             this.SeleccionColor_Rojo.Size = new System.Drawing.Size(191, 127);
             this.SeleccionColor_Rojo.TabIndex = 21;
@@ -246,7 +247,7 @@
             this.SeleccionColor_Azul.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
             this.SeleccionColor_Azul.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.SeleccionColor_Azul.Location = new System.Drawing.Point(429, 306);
-            this.SeleccionColor_Azul.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.SeleccionColor_Azul.Margin = new System.Windows.Forms.Padding(4);
             this.SeleccionColor_Azul.Name = "SeleccionColor_Azul";
             this.SeleccionColor_Azul.Size = new System.Drawing.Size(191, 127);
             this.SeleccionColor_Azul.TabIndex = 22;
@@ -265,7 +266,7 @@
             this.SeleccionColor_Amarillo.FlatAppearance.BorderSize = 2;
             this.SeleccionColor_Amarillo.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.SeleccionColor_Amarillo.Location = new System.Drawing.Point(629, 171);
-            this.SeleccionColor_Amarillo.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.SeleccionColor_Amarillo.Margin = new System.Windows.Forms.Padding(4);
             this.SeleccionColor_Amarillo.Name = "SeleccionColor_Amarillo";
             this.SeleccionColor_Amarillo.Size = new System.Drawing.Size(191, 127);
             this.SeleccionColor_Amarillo.TabIndex = 23;
@@ -283,7 +284,7 @@
             this.SeleccionColor_Verde.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(192)))), ((int)(((byte)(0)))));
             this.SeleccionColor_Verde.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.SeleccionColor_Verde.Location = new System.Drawing.Point(629, 305);
-            this.SeleccionColor_Verde.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.SeleccionColor_Verde.Margin = new System.Windows.Forms.Padding(4);
             this.SeleccionColor_Verde.Name = "SeleccionColor_Verde";
             this.SeleccionColor_Verde.Size = new System.Drawing.Size(191, 127);
             this.SeleccionColor_Verde.TabIndex = 24;
@@ -294,28 +295,29 @@
             this.SeleccionColor_Verde.MouseEnter += new System.EventHandler(this.SeleccionColor_Verde_MouseEnter);
             this.SeleccionColor_Verde.MouseLeave += new System.EventHandler(this.SeleccionColor_Verde_MouseLeave);
             // 
-            // button3
-            // 
-            this.button3.Location = new System.Drawing.Point(281, 391);
-            this.button3.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(121, 58);
-            this.button3.TabIndex = 25;
-            this.button3.Text = "UNO";
-            this.button3.UseVisualStyleBackColor = true;
-            this.button3.Visible = false;
-            this.button3.Click += new System.EventHandler(this.button3_Click);
-            // 
             // buttonSilencio
             // 
             this.buttonSilencio.Location = new System.Drawing.Point(1131, -1);
-            this.buttonSilencio.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.buttonSilencio.Margin = new System.Windows.Forms.Padding(4);
             this.buttonSilencio.Name = "buttonSilencio";
             this.buttonSilencio.Size = new System.Drawing.Size(100, 28);
             this.buttonSilencio.TabIndex = 26;
             this.buttonSilencio.Text = "🔊 Sonido: ON";
             this.buttonSilencio.UseVisualStyleBackColor = true;
             this.buttonSilencio.Click += new System.EventHandler(this.buttonSilencio_Click);
+            // 
+            // botonUno
+            // 
+            this.botonUno.BackColor = System.Drawing.Color.Transparent;
+            this.botonUno.Image = global::UnoGame.Properties.Resources.ImagenBotonUno1;
+            this.botonUno.Location = new System.Drawing.Point(236, 382);
+            this.botonUno.Name = "botonUno";
+            this.botonUno.Size = new System.Drawing.Size(186, 68);
+            this.botonUno.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.botonUno.TabIndex = 27;
+            this.botonUno.TabStop = false;
+            this.botonUno.Visible = false;
+            this.botonUno.Click += new System.EventHandler(this.button3_Click);
             // 
             // Form1
             // 
@@ -325,8 +327,8 @@
             this.BackgroundImage = global::UnoGame.Properties.Resources.fondo_juego_1;
             this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.ClientSize = new System.Drawing.Size(1232, 703);
+            this.Controls.Add(this.botonUno);
             this.Controls.Add(this.buttonSilencio);
-            this.Controls.Add(this.button3);
             this.Controls.Add(this.SeleccionColor_Verde);
             this.Controls.Add(this.SeleccionColor_Amarillo);
             this.Controls.Add(this.SeleccionColor_Azul);
@@ -358,6 +360,7 @@
             this.Click += new System.EventHandler(this.Form1_Click);
             this.panelBurra.ResumeLayout(false);
             this.panelDescarte.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.botonUno)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -385,8 +388,8 @@
         private System.Windows.Forms.Button SeleccionColor_Azul;
         private System.Windows.Forms.Button SeleccionColor_Amarillo;
         private System.Windows.Forms.Button SeleccionColor_Verde;
-        private System.Windows.Forms.Button button3;
         private System.Windows.Forms.Button buttonSilencio;
+        private System.Windows.Forms.PictureBox botonUno;
     }
 }
 

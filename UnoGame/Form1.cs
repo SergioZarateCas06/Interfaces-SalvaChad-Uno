@@ -23,7 +23,6 @@ namespace UnoGame
 
         String jugador1, jugador2, jugador3, jugador4;
         int numJugadores = 4;
-        Card ultimaCarta;
         CartaControl controlPendiente;
         Point inicioVuelo;   // de dónde sale el vuelo actual
         System.Windows.Forms.Timer timerReparto = new System.Windows.Forms.Timer();
@@ -197,7 +196,7 @@ namespace UnoGame
                 !jugadores[turno].DijoUno &&
                 TieneJugadaValida(manosJugadores[turno]);
 
-            button3.Visible = debeAparecer;
+            botonUno.Visible = debeAparecer;
         }
        
         void CargarSonidos()
@@ -1370,7 +1369,7 @@ private void SeleccionColor_Verde_Click(object sender, EventArgs e)
         {
             Sonar("boton");
             CallUno(jugadores[turno]);
-            button3.Visible = false;
+            botonUno.Visible = false;
         }
 
         private void ColorSeleccionado(CardColor colorElegido)

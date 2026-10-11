@@ -148,6 +148,9 @@
     <Compile Include="FormMenu.Designer.cs">
       <DependentUpon>FormMenu.cs</DependentUpon>
     </Compile>
+    <Compile Include="PanelTransparente.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="CartaControl.resx">
@@ -310,6 +313,9 @@
     <Content Include="Resources\azul_reversa.png" />
     <Content Include="Resources\azul_salta.png" />
     <Content Include="Resources\comodin.png" />
+    <None Include="Resources\ImagenBotonUno.jpeg" />
+    <None Include="Resources\ImagenBotonUno.png" />
+    <None Include="Resources\ImagenBotonUno1.png" />
     <Content Include="Resources\mas4.png" />
     <Content Include="Resources\reverso.png" />
     <Content Include="Resources\rojo_0.png" />
