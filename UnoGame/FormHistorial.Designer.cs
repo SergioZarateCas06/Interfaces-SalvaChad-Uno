@@ -110,7 +110,7 @@
             this.labelEstadoHistorial.Size = new System.Drawing.Size(44, 16);
             this.labelEstadoHistorial.TabIndex = 1;
             this.labelEstadoHistorial.Text = "label2";
-            this.labelEstadoHistorial.Click += new System.EventHandler(this.label2_Click);
+       
             // 
             // dgvHistorial
             // 
@@ -123,7 +123,7 @@
             this.dgvHistorial.RowTemplate.Height = 24;
             this.dgvHistorial.Size = new System.Drawing.Size(719, 401);
             this.dgvHistorial.TabIndex = 0;
-            this.dgvHistorial.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView1_CellContentClick);
+       
             // 
             // tabPage3
             // 

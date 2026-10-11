@@ -12,50 +12,39 @@ namespace UnoGame
         private bool bocaAbajo;
         private bool esJugable;
         private bool mouseEncima;
-
         private static readonly Dictionary<string, Image> cache = new Dictionary<string, Image>();
 
-        internal static Image ObtenerImagen(string nombre)
+        public CartaControl()
         {
-            if (nombre == null) return null;
-
-            Image img;
-            if (!cache.TryGetValue(nombre, out img))
-            {
-                img = Properties.Resources.ResourceManager.GetObject(nombre) as Image;
-                cache[nombre] = img;
-            }
-            return img;
+            InitializeComponent();
+            this.Size = new Size(70, 100);
+            this.Cursor = Cursors.Hand;
+            this.BackColor = Color.Transparent;
+            this.DoubleBuffered = true;
+            this.MouseEnter += CartaControl_MouseEnter;
+            this.MouseLeave += CartaControl_MouseLeave;
         }
 
-        private string ObtenerNombreImagen(Card c)
+  
+        public Card Carta
         {
-            if (c.Type == CardType.Comodin) return "comodin";
-            if (c.Type == CardType.Mas4) return "mas4";
-
-            string color = c.Color.ToString().ToLower();
-
-            switch (c.Type)
-            {
-                case CardType.Numero: return color + "_" + c.Number;
-                case CardType.Salta: return color + "_salta";
-                case CardType.Reversa: return color + "_reversa";
-                case CardType.Mas2: return color + "_mas2";
-            }
-            return null;
+            get { return carta; }
+            set { carta = value; Invalidate(); }
         }
 
-        internal static void DibujarImagenRecortada(Graphics g, GraphicsPath path, Image img)
+ 
+        public bool BocaAbajo
         {
-            RectangleF destino = path.GetBounds();
-            GraphicsState estado = g.Save();
-            g.SetClip(path);
-            g.InterpolationMode = InterpolationMode.HighQualityBicubic;
-            g.PixelOffsetMode = PixelOffsetMode.HighQuality;
-            g.DrawImage(img, destino);
-            g.Restore(estado);
+            get { return bocaAbajo; }
+            set { bocaAbajo = value; Invalidate(); }
         }
 
+    
+        public bool EsJugable
+        {
+            get { return esJugable; }
+            set { esJugable = value; Invalidate(); }
+        }
         protected override CreateParams CreateParams
         {
             get
@@ -66,38 +55,11 @@ namespace UnoGame
             }
         }
 
-        public CartaControl()
-        {
-            InitializeComponent();
-            this.Size = new Size(70, 100);
-            this.Cursor = Cursors.Hand;
-            this.BackColor = Color.Transparent;
 
-            this.MouseEnter += CartaControl_MouseEnter;
-            this.MouseLeave += CartaControl_MouseLeave;
-        }
 
-        // La carta que representa este control. Al asignarla se redibuja solo.
-        public Card Carta
-        {
-            get { return carta; }
-            set { carta = value; Invalidate(); }
-        }
 
-        // Si es true, se dibuja el reverso en vez de la cara de la carta.
-        public bool BocaAbajo
-        {
-            get { return bocaAbajo; }
-            set { bocaAbajo = value; Invalidate(); }
-        }
 
-        // Si es true, se resalta visualmente (carta jugable en el turno actual).
-        public bool EsJugable
-        {
-            get { return esJugable; }
-            set { esJugable = value; Invalidate(); }
-        }
-
+        // eventos de raton
         private void CartaControl_MouseEnter(object sender, EventArgs e)
         {
             mouseEncima = true;
@@ -110,6 +72,9 @@ namespace UnoGame
             Invalidate();
         }
 
+
+
+        //dibujos de control
         protected override void OnPaint(PaintEventArgs e)
         {
             base.OnPaint(e);
@@ -224,6 +189,65 @@ namespace UnoGame
             }
         }
 
+
+
+
+
+        //utilidades  de dibujo
+        internal static GraphicsPath RedondearRectangulo(Rectangle bounds, int radio)
+        {
+            GraphicsPath path = new GraphicsPath();
+            int d = radio * 2;
+            path.AddArc(bounds.X, bounds.Y, d, d, 180, 90);
+            path.AddArc(bounds.Right - d, bounds.Y, d, d, 270, 90);
+            path.AddArc(bounds.Right - d, bounds.Bottom - d, d, d, 0, 90);
+            path.AddArc(bounds.X, bounds.Bottom - d, d, d, 90, 90);
+            path.CloseFigure();
+            return path;
+        }
+        internal static void DibujarImagenRecortada(Graphics g, GraphicsPath path, Image img)
+        {
+            RectangleF destino = path.GetBounds();
+            GraphicsState estado = g.Save();
+            g.SetClip(path);
+            g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+            g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+            g.DrawImage(img, destino);
+            g.Restore(estado);
+        }
+
+        internal static Image ObtenerImagen(string nombre)
+        {
+            if (nombre == null) return null;
+
+            Image img;
+            if (!cache.TryGetValue(nombre, out img))
+            {
+                img = Properties.Resources.ResourceManager.GetObject(nombre) as Image;
+                cache[nombre] = img;
+            }
+            return img;
+        }
+
+
+        //datos de la carta
+        private string ObtenerNombreImagen(Card c)
+        {
+            if (c.Type == CardType.Comodin) return "comodin";
+            if (c.Type == CardType.Mas4) return "mas4";
+
+            string color = c.Color.ToString().ToLower();
+
+            switch (c.Type)
+            {
+                case CardType.Numero: return color + "_" + c.Number;
+                case CardType.Salta: return color + "_salta";
+                case CardType.Reversa: return color + "_reversa";
+                case CardType.Mas2: return color + "_mas2";
+            }
+            return null;
+        }
+       
         private string ObtenerTextoSimbolo(Card c)
         {
             switch (c.Type)
@@ -237,7 +261,6 @@ namespace UnoGame
                 default: return "?";
             }
         }
-
         private Color ObtenerColor(CardColor color)
         {
             switch (color)
@@ -250,16 +273,8 @@ namespace UnoGame
             }
         }
 
-        internal static GraphicsPath RedondearRectangulo(Rectangle bounds, int radio)
-        {
-            GraphicsPath path = new GraphicsPath();
-            int d = radio * 2;
-            path.AddArc(bounds.X, bounds.Y, d, d, 180, 90);
-            path.AddArc(bounds.Right - d, bounds.Y, d, d, 270, 90);
-            path.AddArc(bounds.Right - d, bounds.Bottom - d, d, d, 0, 90);
-            path.AddArc(bounds.X, bounds.Bottom - d, d, d, 90, 90);
-            path.CloseFigure();
-            return path;
-        }
+
+
+        
     }
 }

@@ -2,71 +2,50 @@
 using NAudio.Wave;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
-using System.Drawing.Text;
 using System.IO;
-using System.Linq;
 using System.Media;
+
 using System.Windows.Forms;
 
 namespace UnoGame
 {
     public partial class Form1 : Form
     {
+        Dictionary<RotateFlipType, Bitmap> cacheReversos = new Dictionary<RotateFlipType, Bitmap>();
         Dictionary<string, SoundPlayer> sonidos = new Dictionary<string, SoundPlayer>();
         Mp3FileReader lectorMusica;
         WaveOutEvent salidaMusica;
-        bool silenciado = false;
-        bool cerrando = false;
-        String jugador1, jugador2, jugador3, jugador4;
-        int numJugadores = 4;
-        CartaControl controlPendiente;
-        Point inicioVuelo;   // de dónde sale el vuelo actual
         System.Windows.Forms.Timer timerReparto = new System.Windows.Forms.Timer();
         Control cartaVolando;   // CartaControl o PictureBox, según el destino
-        Card cartaEnVuelo;
-        Point origenVuelo = new Point(390, 211);   // de aquí salen las cartas
-        Point destinoVuelo;
-        int pasoVuelo;
-        int pausa;
-        const int PASOS_VUELO = 10;   // más pasos = vuelo más lento
-        const int TICKS_PAUSA = 5;   // pausa entre carta y carta (cada tick son ~15 ms)
-        int repartoRonda = 0;
-        int repartoJugador = 0;
-        bool repartiendo = false;
-        int turno = 0;
-        int sentido = 1;
-        public CardColor colorActivo;
-        Stack<Card> burra = new Stack<Card>();
-        Stack<Card> descarte = new Stack<Card>();
-        List<Card> Cartas1 = new List<Card>();
-        List<Card> Cartas2 = new List<Card>();
-        List<Card> Cartas3 = new List<Card>();
-        List<Card> Cartas4 = new List<Card>();
-        bool robando = false;
-        bool comiendo = false;
-        int comerRestantes;
-        int comerJugador;
-        Action alTerminarComer;
-        bool esperandoColorRobada = false;   // la carta robada ya aterrizó y espera que se elija color
-        Action alAterrizar;   // lo que se hace cuando la carta robada llega a la mano
-        List<Player> jugadores = new List<Player>();
+        CartaControl controlPendiente;
+        Card cartaEnVuelo, cartaPendiente = null;
+        Stack<Card> burra = new Stack<Card>(), descarte = new Stack<Card>();
+        List<Card> Cartas1 = new List<Card>(), Cartas2 = new List<Card>(), Cartas3 = new List<Card>(), Cartas4 = new List<Card>();
         List<Card>[] manosJugadores;
+        List<Player> jugadores = new List<Player>();
+        string jugador1, jugador2, jugador3, jugador4;
+        bool silenciado = false, cerrando = false, repartiendo = false, robando = false, comiendo = false;
+        bool esperandoColorRobada = false;   // la carta robada ya aterrizó y espera que se elija color
+        bool esCartaRobada = false;
+        private bool partidaTerminada = false, cierreForzado = false;
+        int numJugadores = 4, pasoVuelo, pausa, repartoRonda = 0, repartoJugador = 0, turno = 0, sentido = 1, comerRestantes, comerJugador;
+        private int partidaIdActual = -1, numeroTurnoActual = 0;
+        const int PASOS_VUELO = 10;   // más pasos = vuelo más lento
+        const int TICKS_PAUSA = 5;    // pausa entre carta y carta (cada tick son ~15 ms)
+        Point inicioVuelo, destinoVuelo, locRojo, locAzul, locAmarillo, locVerde;
+        Point origenVuelo = new Point(390, 211);   // de aquí salen las cartas
+        Size tamanoOriginalBoton;
+        Action alTerminarComer, alAterrizar;   // alAterrizar: lo que se hace cuando la carta llega a su destino
+        public CardColor colorActivo;
         public event Action<int> TurnoCambiado;
         public event Action<Player> PartidaTerminada;
-        private bool partidaTerminada = false;
         private readonly ApiCliente api = new ApiCliente();
-        private int partidaIdActual = -1;
-        private int numeroTurnoActual = 0;
-        private bool cierreForzado = false;
-        Card cartaPendiente = null;
-        bool esCartaRobada = false;
-        Size tamanoOriginalBoton;
-        Point locRojo, locAzul, locAmarillo, locVerde;
+     
+  
+
         public Form1(String j1, String j2, String j3, String j4)
         {
             jugador1 = j1;
@@ -75,6 +54,11 @@ namespace UnoGame
             jugador4 = j4;
 
             InitializeComponent();
+            this.DoubleBuffered = true;
+            this.SetStyle(ControlStyles.AllPaintingInWmPaint |
+                          ControlStyles.UserPaint |
+                          ControlStyles.OptimizedDoubleBuffer, true);
+            this.UpdateStyles();
             CargarSonidos();
             buttonSilencio.Click += (s, e) => AlternarSilencio();
             IniciarMusica();
@@ -90,119 +74,30 @@ namespace UnoGame
             timerReparto.Tick += TimerReparto_Tick;
             this.Shown += (s, e) => RepartirCartas();
         }
-        
         void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if(cierreForzado)
+            if (cierreForzado)
             {
                 return;
             }
             if (e.CloseReason == CloseReason.UserClosing)
             {
                 DialogResult res = MessageBox.Show("Quieres salir del juego? Se perdera el progreso", "Salir del juego", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
-                if(res == DialogResult.No)
+                if (res == DialogResult.No)
                 {
                     e.Cancel = true;
                 }
             }
         }
-
-        void iniciarTamanoDeBotones()
+        protected override void OnFormClosed(FormClosedEventArgs e)
         {
-            tamanoOriginalBoton = SeleccionColor_Rojo.Size;
-            locRojo = SeleccionColor_Rojo.Location;
-            locAzul = SeleccionColor_Azul.Location;
-            locAmarillo = SeleccionColor_Amarillo.Location;
-            locVerde = SeleccionColor_Verde.Location;
-
+            cerrando = true;
+            if (salidaMusica != null) salidaMusica.Dispose();
+            if (lectorMusica != null) lectorMusica.Dispose();
+            foreach (Bitmap b in cacheReversos.Values) b.Dispose();
+            base.OnFormClosed(e);
         }
-
-        Card SacarCarta()
-        {
-            if (burra.Count == 0)
-                ReponerMazo();
-
-            if (burra.Count == 0)
-            {
-                MostrarBurra();
-                return null;
-            }
-
-            Card carta = burra.Pop();
-
-            if (burra.Count == 0)
-                AlAcabarseLaBurra();
-
-            MostrarBurra();
-            return carta;
-        }
-
-        void MostrarTurno(int t)
-        {
-            ActualizarVista();
-        }
-
-
-        void AvanzarTurno()
-        {
-            turno = (turno + sentido + numJugadores) % numJugadores;
-            if (TurnoCambiado != null)
-            {
-                TurnoCambiado.Invoke(turno);
-            }
-        }
-
-        void ActualizarVista()
-        {
-            // La mesa gira: el jugador en turno siempre aparece abajo
-            int idxIzquierda = (turno + sentido + numJugadores) % numJugadores;
-            int idxArriba = (turno + 2 * sentido + numJugadores) % numJugadores;
-            int idxDerecha = (turno + 3 * sentido + numJugadores) % numJugadores;
-
-            // Quién juega y quién sigue
-            labelTurno.Text = "Turno de: " + jugadores[turno].Nombre +
-                              "  →  Siguiente turno es: " + jugadores[idxIzquierda].Nombre;
-            labelTurno.Font = new Font(labelTurno.Font, FontStyle.Bold);
-
-            // Contadores de la burra y del descarte
-            labelBurra.Text = "Burra: " + CartasRestantes();
-            labelDescarte.Text = "Descarte: " + descarte.Count + " cartas";
-
-            // Cantidad de cartas de los 4 jugadores (uno por posición)
-            label_jugador1.Text = jugadores[turno].Nombre + ": " +
-                                  jugadores[turno].cantidad_cartas + " cartas";
-            label_jugador2.Text = jugadores[idxIzquierda].Nombre + ": " +
-                                  jugadores[idxIzquierda].cantidad_cartas + " cartas";
-            label_jugador3.Text = jugadores[idxArriba].Nombre + ": " +
-                                  jugadores[idxArriba].cantidad_cartas + " cartas";
-            label_jugador4.Text = jugadores[idxDerecha].Nombre + ": " +
-                                  jugadores[idxDerecha].cantidad_cartas + " cartas";
-
-            // Dibujar zonas
-            MostrarManoJugador();
-            MostrarDescarte();
-            MostrarBurra();
-            MostrarRival(panel_rival_arriba, idxArriba, RotateFlipType.Rotate180FlipNone, true);
-            MostrarRival(panel_rival_izquierda, idxIzquierda, RotateFlipType.Rotate90FlipNone, false);
-            MostrarRival(panel_rival_derecha, idxDerecha, RotateFlipType.Rotate270FlipNone, false); 
-
-            // Indicadores de estado
-            MostrarColorActivo();
-            MostrarSentido();
-            ActualizarBotonUno();
-        }
-
-        private void ActualizarBotonUno()
-        {
-            bool debeAparecer =
-                !partidaTerminada &&
-                jugadores[turno].cantidad_cartas == 2 &&
-                !jugadores[turno].DijoUno &&
-                TieneJugadaValida(manosJugadores[turno]);
-
-            botonUno.Visible = debeAparecer;
-        }
-       
+        //sonido 
         void CargarSonidos()
         {
             AgregarSonido("carta", Properties.Resources.carta);
@@ -210,9 +105,7 @@ namespace UnoGame
             AgregarSonido("error", Properties.Resources.error);
             AgregarSonido("comodin", Properties.Resources.comodina);
             AgregarSonido("victoria", Properties.Resources.victoria);
-     
-        
-         
+
         }
         void IniciarMusica()
         {
@@ -239,156 +132,14 @@ namespace UnoGame
             }
         }
 
-        protected override void OnFormClosed(FormClosedEventArgs e)
-        {
-            cerrando = true;
-            if (salidaMusica != null) salidaMusica.Dispose();
-            if (lectorMusica != null) lectorMusica.Dispose();
-            base.OnFormClosed(e);
-        }
+
         void AgregarSonido(string nombre, Stream flujo)
         {
             SoundPlayer sp = new SoundPlayer(flujo);
             sp.Load();
             sonidos[nombre] = sp;
         }
-        private void MostrarColorActivo()
-        {
-            Color c;
-            switch (colorActivo)
-            {
-                case CardColor.Rojo: c = Color.Red; break;
-                case CardColor.Azul: c = Color.RoyalBlue; break;
-                case CardColor.Verde: c = Color.Green; break;
-                case CardColor.Amarillo: c = Color.Gold; break;
-                default: c = Color.Gray; break;
-            }
-            panelColor.BackColor = c;
-            labelColor.Text = "Color actual: " + colorActivo;
-        }
 
-        private void MostrarSentido()
-        {
-            if (sentido == 1)
-                labelSentido.Text = "Sentido: Izquierda";
-            else
-                labelSentido.Text = "Sentido: Derecha";
-        }
-
-        private void MostrarRival(Panel panel, int indiceJugador, RotateFlipType giro, bool horizontal)
-        {
-
-            panel.Controls.Clear();
-            int cantidad = jugadores[indiceJugador].cantidad_cartas;
-
-            int pos = 5;
-            int anchoCartaMini = 40;
-            int separacionIdeal = 15;
-            int separacionMinima = 10; 
-
-            int espacioDisponible = (horizontal ? panel.Width : panel.Height) - anchoCartaMini;
-            int separacionReal;
-
-            if (cantidad > 1)
-            {
-                separacionReal = Math.Min(separacionIdeal, espacioDisponible / (cantidad - 1));
-                if (separacionReal < separacionMinima)
-                    separacionReal = separacionMinima;
-            }
-            else
-            {
-                separacionReal = separacionIdeal;
-            }
-            for (int i = 0; i < cantidad; i++)
-            {
-                Bitmap bmp = new Bitmap(40, 60, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-                using (Graphics g = Graphics.FromImage(bmp))
-                {
-                    g.Clear(Color.Transparent);
-                    g.SmoothingMode = SmoothingMode.AntiAlias;
-
-                    Rectangle area = new Rectangle(1, 1, bmp.Width - 3, bmp.Height - 3);
-                    using (GraphicsPath path = CartaControl.RedondearRectangulo(area, 8))
-                    {
-                        Image imgReverso = CartaControl.ObtenerImagen("reverso");
-                        if (imgReverso != null)
-                        {
-                            CartaControl.DibujarImagenRecortada(g, path, imgReverso);
-                        }
-                        using (Pen pen = new Pen(Color.Black, 2))
-                        {
-                            g.DrawPath(pen, path);
-                        }
-                    }
-                }
-                bmp.RotateFlip(giro);
-
-                PictureBox pb = new PictureBox();
-                pb.Image = bmp;
-                pb.Size = bmp.Size;
-                pb.BackColor = Color.Transparent;
-                pb.Location = horizontal ? new Point(pos, 5) : new Point(5, pos);
-
-                panel.Controls.Add(pb);
-                pb.BringToFront();
-                pos += separacionReal; // se sobreponen como abanico
-            }
-        }
-
-        private void MostrarManoJugador()
-        {
-            panel_mano_jugador1.Controls.Clear();
-            List<Card> mano = manosJugadores[turno];
-
-            int anchoCarta = 70;
-            int separacion = 75;
-            int separacionMinima = 40;
-
-            int espacioDisponible = panel_mano_jugador1.Width - anchoCarta;
-
-            int separacionReal;
-
-            if(mano.Count > 1)
-            {
-                separacionReal = Math.Min(separacion, espacioDisponible / (mano.Count - 1));
-                if(separacionReal < separacionMinima)
-                {
-                    separacionReal = separacionMinima;
-                }
-            }
-            else
-            {
-                separacionReal = separacion;
-            }
-
-            int anchoTotal = anchoCarta + (mano.Count - 1) * separacionReal;
-            panel_mano_jugador1.AutoScroll = true;
-            if (anchoTotal > panel_mano_jugador1.Width)
-            {
-                panel_mano_jugador1.AutoScroll = true;
-                panel_mano_jugador1.AutoScrollMinSize = new Size(anchoTotal, 0);
-            }
-            else
-            {
-                panel_mano_jugador1.AutoScroll = false;
-                panel_mano_jugador1.AutoScrollMinSize = new Size(0, 0);
-            }
-            int x = 10;
-            foreach (Card carta in mano)
-            {
-                CartaControl cc = new CartaControl();
-                cc.Carta = carta;
-                cc.BocaAbajo = false;
-                cc.EsJugable = JugadaValida(carta);
-                cc.Location = new Point(x, 10);
-
-                Card cartaCapturada = carta;
-                cc.Click += (s, e) => IntentarJugarCarta(cartaCapturada);
-
-                panel_mano_jugador1.Controls.Add(cc);
-                x += separacionReal;
-            }
-        }
         void Sonar(string nombre)
         {
             if (silenciado) return;   // NUEVO
@@ -396,66 +147,7 @@ namespace UnoGame
             if (sonidos.TryGetValue(nombre, out sp))
                 sp.Play();
         }
-        private void MostrarDescarte()
-        {
-            panelDescarte.Controls.Clear();
-            Card sup = VerCartaSuperior();
-            if (sup != null)
-            {
-                CartaControl cc = new CartaControl();
-                cc.Carta = sup;
-                cc.BocaAbajo = false;
-                cc.Location = new Point(5, 5);
-                panelDescarte.Controls.Add(cc);
-            }
-        }
-        
-        private void MostrarBurra()
-        {
-            panelBurra.Controls.Clear();
 
-            if (partidaTerminada) return;
-
-            CartaControl cc = new CartaControl();
-            cc.BocaAbajo = true;
-            cc.Location = new Point(5, 5);
-            cc.Cursor = Cursors.Hand;
-            cc.Click += (s, e) => TomarCartaYIntentarJugar(jugadores[turno].Nombre);
-            panelBurra.Controls.Add(cc);
-        }
-
-        private void IntentarJugarCarta(Card cartaElegida, CartaControl origen = null)
-        {
-            if (repartiendo || robando || comiendo) return;
-            if (cartaPendiente != null) return;
-            if (partidaTerminada)
-            {
-                MessageBox.Show("La partida ya terminó.");
-                return;
-            }
-
-            if (!JugadaValida(cartaElegida))
-            {
-                Sonar("error");   
-                MessageBox.Show("Esa carta no es una jugada válida.");
-                return;
-            }
-
-            if (cartaElegida.Type == CardType.Comodin || cartaElegida.Type == CardType.Mas4)
-            {
-                Sonar("comodin");
-                cartaPendiente = cartaElegida;
-                controlPendiente = origen;
-                esCartaRobada = false;
-                SeleccionColor_Rojo.Visible = true;
-                SeleccionColor_Azul.Visible = true;
-                SeleccionColor_Amarillo.Visible = true;
-                SeleccionColor_Verde.Visible = true;
-                return;
-            }
-
-            JugarConAnimacion(origen, cartaElegida, CardColor.Ninguno);
-        }
         void AlternarSilencio()
         {
             silenciado = !silenciado;
@@ -472,45 +164,11 @@ namespace UnoGame
 
             buttonSilencio.Text = silenciado ? "🔇 Sonido: OFF" : "🔊 Sonido: ON";
         }
-        private void JugarConAnimacion(CartaControl origen, Card carta, CardColor color)
-        {
-            // Sin control de origen (o ya redibujado): se juega directo
-            if (origen == null || origen.IsDisposed || origen.Parent == null)
-            {
-                JugarCarta(carta, color);
-                return;
-            }
 
-            Point desde = this.PointToClient(origen.Parent.PointToScreen(origen.Location));
 
-            CartaControl cc = new CartaControl();
-            cc.Carta = carta;
-            cc.BocaAbajo = false;
-            cc.EsJugable = true;
-            cartaVolando = cc;
 
-            origen.Visible = false;   // la carta sale de la mano
-            robando = true;           // bloquea clics mientras vuela
-            pausa = 0;
 
-            alAterrizar = () => JugarCarta(carta, color);
-            IniciarVuelo(panelDescarte, new Point(5, 5), desde);
-            timerReparto.Start();
-        }
-        void CallUno(Player jugador)
-        {
-            jugador.callUno();
-        }
-
-        void InvertirSentido()
-        {
-            sentido = -sentido;
-        }
-
-        int CartasRestantes()
-        {
-            return burra.Count;
-        }
+        //Reglas de juego
         private void BarajarMazo()
         {
             List<Card> mazo = new List<Card>();
@@ -550,6 +208,150 @@ namespace UnoGame
             burra.Clear();
             foreach (Card carta in mazo)
                 burra.Push(carta);
+        }
+
+        Card SacarCarta()
+        {
+            if (burra.Count == 0)
+                ReponerMazo();
+
+            if (burra.Count == 0)
+            {
+                MostrarBurra();
+                return null;
+            }
+
+            Card carta = burra.Pop();
+
+            if (burra.Count == 0)
+                AlAcabarseLaBurra();
+
+            MostrarBurra();
+            return carta;
+        }
+
+        private void ReponerMazo()
+        {
+            if (descarte.Count > 0)
+            {
+                Card cartaSuperior = descarte.Pop();
+                List<Card> cartasRestantes = new List<Card>(descarte);
+                descarte.Clear();
+                descarte.Push(cartaSuperior);
+                Random rnd = new Random();
+                int n = cartasRestantes.Count;
+                while (n > 1)
+                {
+                    n--;
+                    int k = rnd.Next(n + 1);
+                    Card value = cartasRestantes[k];
+                    cartasRestantes[k] = cartasRestantes[n];
+                    cartasRestantes[n] = value;
+                }
+                foreach (Card c in cartasRestantes)
+                    burra.Push(c);
+            }
+        }
+        private void DevolverYBarajar(Card carta)
+        {
+            List<Card> restante = new List<Card>(burra);
+            restante.Add(carta);
+
+            Random rnd = new Random();
+            int n = restante.Count;
+            while (n > 1)
+            {
+                n--;
+                int k = rnd.Next(n + 1);
+                Card value = restante[k];
+                restante[k] = restante[n];
+                restante[n] = value;
+            }
+
+            burra.Clear();
+            foreach (Card c in restante)
+                burra.Push(c);
+        }
+
+        private void AlAcabarseLaBurra()
+        {
+            string mensaje;
+            if (descarte.Count > 1)
+            {
+                ReponerMazo();   //BARAJEAR BURRA
+                mensaje = "Se acabó la burra. Se barajó el descarte para formar una nueva.";
+            }
+            else
+            {
+                mensaje = "Se acabó la burra y no hay cartas en el descarte para reponerla.";
+            }
+
+
+            this.BeginInvoke(new Action(() => MostrarAviso(mensaje)));
+        }
+
+        private void MostrarAviso(string mensaje)
+        {
+            if (IsDisposed) return;
+            bool corria = timerReparto.Enabled;
+            timerReparto.Stop();
+            MessageBox.Show(mensaje, "Burra");
+            if (corria && !IsDisposed) timerReparto.Start();
+        }
+        public bool JugadaValida(Card cartaJugada)
+        {
+            Card ultimaCarta = VerCartaSuperior();
+            if (ultimaCarta == null) return false;
+
+            if (cartaJugada.Type == CardType.Comodin || cartaJugada.Type == CardType.Mas4)
+                return true;
+            CardColor colorenjuego = (ultimaCarta.Color == CardColor.Ninguno) ? colorActivo : ultimaCarta.Color;
+            if (cartaJugada.Color == colorenjuego)
+                return true;
+            if (cartaJugada.Type == CardType.Numero && ultimaCarta.Type == CardType.Numero)
+                if (cartaJugada.Number == ultimaCarta.Number)
+                    return true;
+            if (cartaJugada.Type != CardType.Numero && cartaJugada.Type == ultimaCarta.Type)
+                return true;
+            return false;
+        }
+        public bool TieneJugadaValida(List<Card> mano)
+        {
+            foreach (Card carta in mano)
+            {
+                if (JugadaValida(carta))
+                    return true;
+            }
+            return false;
+        }
+        public Card VerCartaSuperior()
+        {
+            if (descarte.Count > 0)
+            {
+                return descarte.Peek();
+            }
+            return null;
+        }
+        int CartasRestantes()
+        {
+            return burra.Count;
+        }
+        void AvanzarTurno()
+        {
+            turno = (turno + sentido + numJugadores) % numJugadores;
+            if (TurnoCambiado != null)
+            {
+                TurnoCambiado.Invoke(turno);
+            }
+        }
+        void CallUno(Player jugador)
+        {
+            jugador.callUno();
+        }
+
+        void InvertirSentido()
+        {
+            sentido = -sentido;
         }
         private async void JugarCarta(Card cartaJugada, CardColor colorElegido = CardColor.Ninguno)
         {
@@ -639,133 +441,6 @@ namespace UnoGame
             AvanzarTurno();
 
         }
-        public bool JugadaValida(Card cartaJugada)
-        {
-            Card ultimaCarta = VerCartaSuperior();
-            if (ultimaCarta == null) return false;
-
-            if (cartaJugada.Type == CardType.Comodin || cartaJugada.Type == CardType.Mas4)
-                return true;
-            CardColor colorenjuego = (ultimaCarta.Color == CardColor.Ninguno) ? colorActivo : ultimaCarta.Color;
-            if (cartaJugada.Color == colorenjuego)
-                return true;
-            if (cartaJugada.Type == CardType.Numero && ultimaCarta.Type == CardType.Numero)
-                if (cartaJugada.Number == ultimaCarta.Number)
-                    return true;
-            if (cartaJugada.Type != CardType.Numero && cartaJugada.Type == ultimaCarta.Type)
-                return true;
-            return false;
-        }
-        public bool TieneJugadaValida(List<Card> mano)
-        {
-            foreach (Card carta in mano)
-            {
-                if (JugadaValida(carta))
-                    return true;
-            }
-            return false;
-        }
-        public Card VerCartaSuperior()
-        {
-            if (descarte.Count > 0)
-            {
-                return descarte.Peek();
-            }
-            return null;
-        }
-        private void ReponerMazo()
-        {
-            if (descarte.Count > 0)
-            {
-                Card cartaSuperior = descarte.Pop();
-                List<Card> cartasRestantes = new List<Card>(descarte);
-                descarte.Clear();
-                descarte.Push(cartaSuperior);
-                Random rnd = new Random();
-                int n = cartasRestantes.Count;
-                while (n > 1)
-                {
-                    n--;
-                    int k = rnd.Next(n + 1);
-                    Card value = cartasRestantes[k];
-                    cartasRestantes[k] = cartasRestantes[n];
-                    cartasRestantes[n] = value;
-                }
-                foreach (Card c in cartasRestantes)
-                    burra.Push(c);
-            }
-        }
-        private void MostrarAviso(string mensaje)
-        {
-            if (IsDisposed) return;
-            bool corria = timerReparto.Enabled;
-            timerReparto.Stop();
-            MessageBox.Show(mensaje, "Burra");
-            if (corria && !IsDisposed) timerReparto.Start();
-        }
-
-
-        private void AlAcabarseLaBurra()
-        {
-            string mensaje;
-            if (descarte.Count > 1)
-            {
-                ReponerMazo();   //BARAJEAR BURRA
-                mensaje = "Se acabó la burra. Se barajó el descarte para formar una nueva.";
-            }
-            else
-            {
-                mensaje = "Se acabó la burra y no hay cartas en el descarte para reponerla.";
-            }
-
-
-            this.BeginInvoke(new Action(() => MostrarAviso(mensaje)));
-        }
-
-        private async void TerminarPartida(Player ganador)
-        {
-            Sonar("victoria");
-            partidaTerminada = true;
-
-            if (partidaIdActual != -1)
-            {
-                try
-                {
-                    await api.RegistrarGanador(partidaIdActual, ganador.Nombre);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("No se pudo registrar el ganador: " + ex.Message);
-                }
-            }
-            FormFinPartida formFin = new FormFinPartida();
-            formFin.MostrarGanador(ganador.Nombre);
-            formFin.ShowDialog();
-
-            if (formFin.DialogResult == DialogResult.Retry)
-            {
-                ReiniciarPartida();
-            }
-
-            else
-            {
-                cierreForzado = true;
-                this.DialogResult = DialogResult.Abort;
-                this.Close();
-            }
-
-            if (PartidaTerminada != null)
-                PartidaTerminada.Invoke(ganador);
-
-            ActualizarVista();
-        }
-
-        private void ReiniciarPartida()
-        {
-            turno = 0;
-            sentido = 1;
-            RepartirCartas();
-        }
         private void JugarTurno()
         {
             if (cartaPendiente != null) return;
@@ -836,6 +511,85 @@ namespace UnoGame
                 }
             }
         }
+        private void IntentarJugarCarta(Card cartaElegida, CartaControl origen = null)
+        {
+            if (repartiendo || robando || comiendo) return;
+            if (cartaPendiente != null) return;
+            if (partidaTerminada)
+            {
+                MessageBox.Show("La partida ya terminó.");
+                return;
+            }
+
+            if (!JugadaValida(cartaElegida))
+            {
+                Sonar("error");   
+                MessageBox.Show("Esa carta no es una jugada válida.");
+                return;
+            }
+
+            if (cartaElegida.Type == CardType.Comodin || cartaElegida.Type == CardType.Mas4)
+            {
+                Sonar("comodin");
+                cartaPendiente = cartaElegida;
+                controlPendiente = origen;
+                esCartaRobada = false;
+                SeleccionColor_Rojo.Visible = true;
+                SeleccionColor_Azul.Visible = true;
+                SeleccionColor_Amarillo.Visible = true;
+                SeleccionColor_Verde.Visible = true;
+                return;
+            }
+
+            JugarConAnimacion(origen, cartaElegida, CardColor.Ninguno);
+        }
+      
+
+        private async void TerminarPartida(Player ganador)
+        {
+            Sonar("victoria");
+            partidaTerminada = true;
+
+            if (partidaIdActual != -1)
+            {
+                try
+                {
+                    await api.RegistrarGanador(partidaIdActual, ganador.Nombre);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("No se pudo registrar el ganador: " + ex.Message);
+                }
+            }
+            FormFinPartida formFin = new FormFinPartida();
+            formFin.MostrarGanador(ganador.Nombre);
+            formFin.ShowDialog();
+
+            if (formFin.DialogResult == DialogResult.Retry)
+            {
+                ReiniciarPartida();
+            }
+
+            else
+            {
+                cierreForzado = true;
+                this.DialogResult = DialogResult.Abort;
+                this.Close();
+            }
+
+            if (PartidaTerminada != null)
+                PartidaTerminada.Invoke(ganador);
+
+            ActualizarVista();
+        }
+
+        private void ReiniciarPartida()
+        {
+            turno = 0;
+            sentido = 1;
+            RepartirCartas();
+        }
+       
 
         private void TomarCartaYIntentarJugar(string nombreJugadorActual)
         {
@@ -938,66 +692,328 @@ namespace UnoGame
             AvanzarTurno();
         }
 
-        private CardColor PedirColor()
+      
+       
+
+        //Dibujo de la mesa
+        void ActualizarVista()
         {
-            string entrada = Interaction.InputBox(
-                "Elige un color (Rojo, Azul, Verde, Amarillo):", "Elegir color", "Rojo");
+            SuspendLayout();
+            // La mesa gira: el jugador en turno siempre aparece abajo
+            int idxIzquierda = (turno + sentido + numJugadores) % numJugadores;
+            int idxArriba = (turno + 2 * sentido + numJugadores) % numJugadores;
+            int idxDerecha = (turno + 3 * sentido + numJugadores) % numJugadores;
 
-            CardColor color;
-            if (Enum.TryParse(entrada, true, out color) && color != CardColor.Ninguno)
-                return color;
+            // Quién juega y quién sigue
+            labelTurno.Text = "Turno de: " + jugadores[turno].Nombre +
+                              "  →  Siguiente turno es: " + jugadores[idxIzquierda].Nombre;
+            labelTurno.Font = new Font(labelTurno.Font, FontStyle.Bold);
 
-            return CardColor.Rojo;
+            // Contadores de la burra y del descarte
+            labelBurra.Text = "Burra: " + CartasRestantes();
+            labelDescarte.Text = "Descarte: " + descarte.Count + " cartas";
+
+            // Cantidad de cartas de los 4 jugadores (uno por posición)
+            label_jugador1.Text = jugadores[turno].Nombre + ": " +
+                                  jugadores[turno].cantidad_cartas + " cartas";
+            label_jugador2.Text = jugadores[idxIzquierda].Nombre + ": " +
+                                  jugadores[idxIzquierda].cantidad_cartas + " cartas";
+            label_jugador3.Text = jugadores[idxArriba].Nombre + ": " +
+                                  jugadores[idxArriba].cantidad_cartas + " cartas";
+            label_jugador4.Text = jugadores[idxDerecha].Nombre + ": " +
+                                  jugadores[idxDerecha].cantidad_cartas + " cartas";
+
+            // Dibujar zonas
+            MostrarManoJugador();
+            MostrarDescarte();
+            MostrarBurra();
+            MostrarRival(panel_rival_arriba, idxArriba, RotateFlipType.Rotate180FlipNone, true);
+            MostrarRival(panel_rival_izquierda, idxIzquierda, RotateFlipType.Rotate90FlipNone, false);
+            MostrarRival(panel_rival_derecha, idxDerecha, RotateFlipType.Rotate270FlipNone, false);
+
+            // Indicadores de estado
+            MostrarColorActivo();
+            MostrarSentido();
+            ActualizarBotonUno();
+            ResumeLayout();
         }
-        private void richTextBox1_TextChanged(object sender, EventArgs e)
-        {
 
+        void MostrarTurno(int t)
+        {
+            ActualizarVista();
         }
-
-        private void botonRepartir(object sender, EventArgs e)
+        private void MostrarManoJugador()
         {
-            RepartirCartas();
-        }
+            panel_mano_jugador1.Controls.Clear();
+            List<Card> mano = manosJugadores[turno];
 
+            int anchoCarta = 70;
+            int separacion = 75;
+            int separacionMinima = 40;
 
-        public class Player
-        {
-            public string Nombre;
-            private List<Card> mano;
-            public bool DijoUno;
+            int espacioDisponible = panel_mano_jugador1.Width - anchoCarta;
 
-            public void callUno()
+            int separacionReal;
+
+            if (mano.Count > 1)
             {
-                if (mano.Count == 2)
+                separacionReal = Math.Min(separacion, espacioDisponible / (mano.Count - 1));
+                if (separacionReal < separacionMinima)
                 {
-                    DijoUno = true;
+                    separacionReal = separacionMinima;
                 }
             }
-            public Player(string nombre, List<Card> mano)
+            else
             {
-                this.Nombre = nombre;
-                this.mano = mano;
-                this.DijoUno = false;
+                separacionReal = separacion;
             }
-            public int cantidad_cartas
+
+            int anchoTotal = anchoCarta + (mano.Count - 1) * separacionReal;
+            panel_mano_jugador1.AutoScroll = true;
+            if (anchoTotal > panel_mano_jugador1.Width)
             {
-                get { return mano.Count; }
+                panel_mano_jugador1.AutoScroll = true;
+                panel_mano_jugador1.AutoScrollMinSize = new Size(anchoTotal, 0);
             }
-            public void Agregar_carta(Card carta)
+            else
             {
-                if (carta != null)
-                {
-                    
-                   
-                    mano.Add(carta);
-                    DijoUno = false;
-                }
+                panel_mano_jugador1.AutoScroll = false;
+                panel_mano_jugador1.AutoScrollMinSize = new Size(0, 0);
             }
-            public bool Quitar_carta(Card carta)
+            int x = 10;
+            foreach (Card carta in mano)
             {
-                return mano.Remove(carta);
+                CartaControl cc = new CartaControl();
+                cc.Carta = carta;
+                cc.BocaAbajo = false;
+                cc.EsJugable = JugadaValida(carta);
+                cc.Location = new Point(x, 10);
+
+                Card cartaCapturada = carta;
+                CartaControl ccCapturado = cc;
+                cc.Click += (s, e) => IntentarJugarCarta(cartaCapturada, ccCapturado);
+
+                panel_mano_jugador1.Controls.Add(cc);
+                x += separacionReal;
             }
         }
+        private void MostrarRival(Panel panel, int indiceJugador, RotateFlipType giro, bool horizontal)
+        {
+
+            panel.Controls.Clear();
+            int cantidad = jugadores[indiceJugador].cantidad_cartas;
+
+            int pos = 5;
+            int anchoCartaMini = 40;
+            int separacionIdeal = 15;
+            int separacionMinima = 10;
+
+            int espacioDisponible = (horizontal ? panel.Width : panel.Height) - anchoCartaMini;
+            int separacionReal;
+
+            if (cantidad > 1)
+            {
+                separacionReal = Math.Min(separacionIdeal, espacioDisponible / (cantidad - 1));
+                if (separacionReal < separacionMinima)
+                    separacionReal = separacionMinima;
+            }
+            else
+            {
+                separacionReal = separacionIdeal;
+            }
+            for (int i = 0; i < cantidad; i++)
+            {
+                Bitmap bmp = ObtenerReverso(giro);
+
+                PictureBox pb = new PictureBox();
+                pb.Image = bmp;
+                pb.Size = bmp.Size;
+                pb.BackColor = Color.Transparent;
+                pb.Location = horizontal ? new Point(pos, 5) : new Point(5, pos);
+
+                panel.Controls.Add(pb);
+                pb.BringToFront();
+                pos += separacionReal; // se sobreponen como abanico
+            }
+        }
+        private void MostrarDescarte()
+        {
+            panelDescarte.Controls.Clear();
+            Card sup = VerCartaSuperior();
+            if (sup != null)
+            {
+                CartaControl cc = new CartaControl();
+                cc.Carta = sup;
+                cc.BocaAbajo = false;
+                cc.Location = new Point(5, 5);
+                panelDescarte.Controls.Add(cc);
+            }
+        }
+
+        private void MostrarBurra()
+        {
+            panelBurra.Controls.Clear();
+
+            if (partidaTerminada) return;
+
+            CartaControl cc = new CartaControl();
+            cc.BocaAbajo = true;
+            cc.Location = new Point(5, 5);
+            cc.Cursor = Cursors.Hand;
+            cc.Click += (s, e) => TomarCartaYIntentarJugar(jugadores[turno].Nombre);
+            panelBurra.Controls.Add(cc);
+        }
+        private void MostrarColorActivo()
+        {
+            Color c;
+            switch (colorActivo)
+            {
+                case CardColor.Rojo: c = Color.Red; break;
+                case CardColor.Azul: c = Color.RoyalBlue; break;
+                case CardColor.Verde: c = Color.Green; break;
+                case CardColor.Amarillo: c = Color.Gold; break;
+                default: c = Color.Gray; break;
+            }
+            panelColor.BackColor = c;
+            labelColor.Text = "Color actual: " + colorActivo;
+        }
+
+        private void MostrarSentido()
+        {
+            if (sentido == 1)
+                labelSentido.Text = "Sentido: Izquierda";
+            else
+                labelSentido.Text = "Sentido: Derecha";
+        }
+        private void ActualizarBotonUno()
+        {
+            bool debeAparecer =
+                !partidaTerminada &&
+                jugadores[turno].cantidad_cartas == 2 &&
+                !jugadores[turno].DijoUno &&
+                TieneJugadaValida(manosJugadores[turno]);
+
+            botonUno.Visible = debeAparecer;
+        }
+        private void ReacomodarPanel(Panel panel, bool horizontal, int inicio, int fijo, int separacion)
+        {
+            for (int i = 0; i < panel.Controls.Count; i++)
+            {
+                panel.Controls[i].Location = horizontal
+                    ? new Point(inicio + i * separacion, fijo)
+                    : new Point(fijo, inicio + i * separacion);
+            }
+        }
+
+        private void AgregarCartaMano(Card carta)
+        {
+            CartaControl cc = new CartaControl();
+            cc.Carta = carta;
+            cc.BocaAbajo = false;
+            cc.EsJugable = JugadaValida(carta);
+
+            Card cartaCapturada = carta;
+            CartaControl ccCapturado = cc;
+            cc.Click += (s, e) => IntentarJugarCarta(cartaCapturada, ccCapturado);
+
+            panel_mano_jugador1.SuspendLayout();
+            panel_mano_jugador1.Controls.Add(cc);
+
+            int cantidad = panel_mano_jugador1.Controls.Count;
+            int sep = SeparacionMano(cantidad);
+            ReacomodarPanel(panel_mano_jugador1, true, 10, 10, sep);
+
+            int anchoTotal = 70 + (cantidad - 1) * sep;
+            if (anchoTotal > panel_mano_jugador1.Width)
+            {
+                panel_mano_jugador1.AutoScroll = true;
+                panel_mano_jugador1.AutoScrollMinSize = new Size(anchoTotal, 0);
+            }
+            panel_mano_jugador1.ResumeLayout();
+        }
+
+        private void AgregarReverso(Panel panel, RotateFlipType giro, bool horizontal)
+        {
+            Bitmap bmp = ObtenerReverso(giro);
+            PictureBox pb = new PictureBox();
+            pb.Image = bmp;
+            pb.Size = bmp.Size;
+            pb.BackColor = Color.Transparent;
+
+            int cantidad = panel.Controls.Count + 1;
+            int espacio = (horizontal ? panel.Width : panel.Height) - 40;
+            int sep = cantidad > 1 ? Math.Max(10, Math.Min(15, espacio / (cantidad - 1))) : 15;
+
+            panel.SuspendLayout();
+            panel.Controls.Add(pb);
+            ReacomodarPanel(panel, horizontal, 5, 5, sep);
+            panel.ResumeLayout();
+        }
+        private void DibujarCartaRepartida(int j, Card carta)
+        {
+            int pos = (((j - turno) * sentido) % numJugadores + numJugadores) % numJugadores;
+
+            switch (pos)
+            {
+                case 0: AgregarCartaMano(carta); break;
+                case 1: AgregarReverso(panel_rival_izquierda, RotateFlipType.Rotate90FlipNone, false); break;
+                case 2: AgregarReverso(panel_rival_arriba, RotateFlipType.Rotate180FlipNone, true); break;
+                case 3: AgregarReverso(panel_rival_derecha, RotateFlipType.Rotate270FlipNone, false); break;
+            }
+
+            Label[] etiquetas = { label_jugador1, label_jugador2, label_jugador3, label_jugador4 };
+            etiquetas[pos].Text = jugadores[j].Nombre + ": " + jugadores[j].cantidad_cartas + " cartas";
+            labelBurra.Text = "Burra: " + CartasRestantes();
+        }
+        Bitmap ObtenerReverso(RotateFlipType giro)
+        {
+            Bitmap bmp;
+            if (cacheReversos.TryGetValue(giro, out bmp)) return bmp;
+
+            bmp = new Bitmap(40, 60, PixelFormat.Format32bppArgb);
+            using (Graphics g = Graphics.FromImage(bmp))
+            {
+                g.Clear(Color.Transparent);
+                g.SmoothingMode = SmoothingMode.AntiAlias;
+                Rectangle area = new Rectangle(1, 1, bmp.Width - 3, bmp.Height - 3);
+                using (GraphicsPath path = CartaControl.RedondearRectangulo(area, 8))
+                {
+                    Image imgReverso = CartaControl.ObtenerImagen("reverso");
+                    if (imgReverso != null)
+                        CartaControl.DibujarImagenRecortada(g, path, imgReverso);
+                    using (Pen pen = new Pen(Color.Black, 2))
+                        g.DrawPath(pen, path);
+                }
+            }
+            bmp.RotateFlip(giro);
+            cacheReversos[giro] = bmp;
+            return bmp;
+        }
+        private PictureBox CrearReversoGirado(RotateFlipType giro, Color fondo)
+        {
+            CartaControl cc = new CartaControl();
+            cc.BocaAbajo = true;
+            cc.Size = new Size(40, 60);
+            cc.BackColor = fondo;
+
+            Bitmap bmp = new Bitmap(cc.Width, cc.Height);
+            cc.DrawToBitmap(bmp, new Rectangle(0, 0, cc.Width, cc.Height));
+            bmp.RotateFlip(giro);
+            cc.Dispose();
+
+            PictureBox pb = new PictureBox();
+            pb.Image = bmp;
+            pb.Size = bmp.Size;
+            pb.BackColor = Color.Transparent;
+            return pb;
+        }
+
+
+
+
+
+
+        //animacion
         private async void RepartirCartas()
         {
             timerReparto.Stop();
@@ -1077,7 +1093,7 @@ namespace UnoGame
                 if (comiendo)
                 {
                     jugadores[comerJugador].Agregar_carta(cartaEnVuelo);
-                    DibujarCartaRepartida(comerJugador);
+                    DibujarCartaRepartida(comerJugador, cartaEnVuelo);
                     cartaEnVuelo = null;
                     comerRestantes--;
                     pausa = TICKS_PAUSA / 2;
@@ -1088,7 +1104,7 @@ namespace UnoGame
                 if (repartoRonda < 7)
                 {
                     jugadores[repartoJugador].Agregar_carta(cartaEnVuelo);
-                    DibujarCartaRepartida(repartoJugador);
+                    DibujarCartaRepartida(repartoJugador, cartaEnVuelo);
 
                     repartoJugador++;
                     if (repartoJugador == numJugadores)
@@ -1154,28 +1170,6 @@ namespace UnoGame
             pausa = 0;
             timerReparto.Start();
         }
-        private int PosicionDeJugador(int j)
-        {
-            // 0 abajo, 1 izquierda, 2 arriba, 3 derecha
-            return (((j - turno) * sentido) % numJugadores + numJugadores) % numJugadores;
-        }
-
-        private Panel PanelDeJugador(int j)
-        {
-            Panel[] porPosicion = { panel_mano_jugador1, panel_rival_izquierda,
-                            panel_rival_arriba, panel_rival_derecha };
-            return porPosicion[PosicionDeJugador(j)];
-        }
-
-        // Misma separación que calcula MostrarManoJugador
-        private int SeparacionMano(int cantidad)
-        {
-            int anchoCarta = 70, separacion = 75, separacionMinima = 40;
-            if (cantidad <= 1) return separacion;
-            int espacio = panel_mano_jugador1.Width - anchoCarta;
-            int real = Math.Min(separacion, espacio / (cantidad - 1));
-            return Math.Max(real, separacionMinima);
-        }
 
         private void LanzarCarta(int j)
         {
@@ -1228,26 +1222,31 @@ namespace UnoGame
 
             IniciarVuelo(panelDescarte, new Point(5, 5));   // donde la dibuja MostrarDescarte
         }
-
-        private PictureBox CrearReversoGirado(RotateFlipType giro, Color fondo)
+        private void JugarConAnimacion(CartaControl origen, Card carta, CardColor color)
         {
+            // Sin control de origen (o ya redibujado): se juega directo
+            if (origen == null || origen.IsDisposed || origen.Parent == null)
+            {
+                JugarCarta(carta, color);
+                return;
+            }
+
+            Point desde = this.PointToClient(origen.Parent.PointToScreen(origen.Location));
+
             CartaControl cc = new CartaControl();
-            cc.BocaAbajo = true;
-            cc.Size = new Size(40, 60);
-            cc.BackColor = fondo;
+            cc.Carta = carta;
+            cc.BocaAbajo = false;
+            cc.EsJugable = true;
+            cartaVolando = cc;
 
-            Bitmap bmp = new Bitmap(cc.Width, cc.Height);
-            cc.DrawToBitmap(bmp, new Rectangle(0, 0, cc.Width, cc.Height));
-            bmp.RotateFlip(giro);
-            cc.Dispose();
+            origen.Visible = false;   // la carta sale de la mano
+            robando = true;           // bloquea clics mientras vuela
+            pausa = 0;
 
-            PictureBox pb = new PictureBox();
-            pb.Image = bmp;
-            pb.Size = bmp.Size;
-            pb.BackColor = Color.Transparent;
-            return pb;
+            alAterrizar = () => JugarCarta(carta, color);
+            IniciarVuelo(panelDescarte, new Point(5, 5), desde);
+            timerReparto.Start();
         }
-
         private void IniciarVuelo(Panel destino, Point local, Point? desde = null)
         {
             inicioVuelo = desde ?? origenVuelo;
@@ -1282,157 +1281,68 @@ namespace UnoGame
 
             if (img != null) img.Dispose();   // ahora sí es seguro liberarla
         }
-        private void DibujarCartaRepartida(int j)
+
+        private int PosicionDeJugador(int j)
         {
             // 0 abajo, 1 izquierda, 2 arriba, 3 derecha
-            int pos = (((j - turno) * sentido) % numJugadores + numJugadores) % numJugadores;
-
-            switch (pos)
-            {
-                case 0: MostrarManoJugador(); break;
-                case 1: MostrarRival(panel_rival_izquierda, j, RotateFlipType.Rotate90FlipNone, false); break;
-                case 2: MostrarRival(panel_rival_arriba, j, RotateFlipType.Rotate180FlipNone, true); break;
-                case 3: MostrarRival(panel_rival_derecha, j, RotateFlipType.Rotate270FlipNone, false); break;
-            }
-
-            Label[] etiquetas = { label_jugador1, label_jugador2, label_jugador3, label_jugador4 };
-            etiquetas[pos].Text = jugadores[j].Nombre + ": " + jugadores[j].cantidad_cartas + " cartas";
-            labelBurra.Text = "Burra: " + CartasRestantes();
-        }
-        private void DevolverYBarajar(Card carta)
-        {
-            List<Card> restante = new List<Card>(burra);
-            restante.Add(carta);
-
-            Random rnd = new Random();
-            int n = restante.Count;
-            while (n > 1)
-            {
-                n--;
-                int k = rnd.Next(n + 1);
-                Card value = restante[k];
-                restante[k] = restante[n];
-                restante[n] = value;
-            }
-
-            burra.Clear();
-            foreach (Card c in restante)
-                burra.Push(c);
-        }
-        private void botonBarajar(object sender, EventArgs e)
-        {
-            BarajarMazo();
+            return (((j - turno) * sentido) % numJugadores + numJugadores) % numJugadores;
         }
 
-        private void labelBurra_Click(object sender, EventArgs e)
+        private Panel PanelDeJugador(int j)
         {
-
+            Panel[] porPosicion = { panel_mano_jugador1, panel_rival_izquierda,
+                            panel_rival_arriba, panel_rival_derecha };
+            return porPosicion[PosicionDeJugador(j)];
         }
 
-        private void Form1_Load(object sender, EventArgs e)
+        // Misma separación que calcula MostrarManoJugador
+        private int SeparacionMano(int cantidad)
         {
-
+            int anchoCarta = 70, separacion = 75, separacionMinima = 40;
+            if (cantidad <= 1) return separacion;
+            int espacio = panel_mano_jugador1.Width - anchoCarta;
+            int real = Math.Min(separacion, espacio / (cantidad - 1));
+            return Math.Max(real, separacionMinima);
         }
 
-        private void cartaControl1_Load(object sender, EventArgs e)
+
+        //colores
+        void iniciarTamanoDeBotones()
         {
+            tamanoOriginalBoton = SeleccionColor_Rojo.Size;
+            locRojo = SeleccionColor_Rojo.Location;
+            locAzul = SeleccionColor_Azul.Location;
+            locAmarillo = SeleccionColor_Amarillo.Location;
+            locVerde = SeleccionColor_Verde.Location;
 
         }
-
-        private void panel_mano_jugador1_Paint(object sender, PaintEventArgs e)
+        void iniciarColoresDeBotones()
         {
 
-        }
-
-        private void SeleccionColor_Rojo_MouseEnter(object sender, EventArgs e)
-        {
-            SeleccionColor_Rojo.BackColor = Color.Red;
-            SeleccionColor_Rojo.Size = new Size(tamanoOriginalBoton.Width + 12, tamanoOriginalBoton.Height + 12);
-            SeleccionColor_Rojo.Location = new Point(locRojo.X - 6, locRojo.Y - 6);
-        }
-
-        private void SeleccionColor_Rojo_MouseLeave(object sender, EventArgs e)
-        {
             SeleccionColor_Rojo.BackColor = Color.FromArgb(180, 40, 40);
-            SeleccionColor_Rojo.Size = tamanoOriginalBoton;
-            SeleccionColor_Rojo.Location = locRojo;
-        }
-
-        private void SeleccionColor_Amarillo_MouseEnter(object sender, EventArgs e)
-        {
-            SeleccionColor_Amarillo.BackColor = Color.Yellow;
-            SeleccionColor_Amarillo.Size = new Size(tamanoOriginalBoton.Width + 12, tamanoOriginalBoton.Height + 12);
-            SeleccionColor_Amarillo.Location = new Point(locAmarillo.X - 6, locAmarillo.Y - 6);
-        }
-
-        private void SeleccionColor_Amarillo_MouseLeave(object sender, EventArgs e)
-        {
-            SeleccionColor_Amarillo.BackColor = Color.FromArgb(210, 160, 20);
-            SeleccionColor_Amarillo.Size = tamanoOriginalBoton;
-            SeleccionColor_Amarillo.Location = locAmarillo;
-        }
-
-
-        private void SeleccionColor_Azul_MouseEnter(object sender, EventArgs e)
-        {
-            SeleccionColor_Azul.BackColor = Color.DodgerBlue;
-            SeleccionColor_Azul.Size = new Size(tamanoOriginalBoton.Width + 12, tamanoOriginalBoton.Height + 12);
-            SeleccionColor_Azul.Location = new Point(locAzul.X - 6, locAzul.Y - 6);
-        }
-
-        private void SeleccionColor_Azul_MouseLeave(object sender, EventArgs e)
-        {
             SeleccionColor_Azul.BackColor = Color.FromArgb(0, 90, 180);
-            SeleccionColor_Azul.Size = tamanoOriginalBoton;
-            SeleccionColor_Azul.Location = locAzul;
-        }
-
-        private void SeleccionColor_Verde_MouseEnter(object sender, EventArgs e)
-        {
-            SeleccionColor_Verde.BackColor = Color.LimeGreen;
-            SeleccionColor_Verde.Size = new Size(tamanoOriginalBoton.Width + 12, tamanoOriginalBoton.Height + 12);
-            SeleccionColor_Verde.Location = new Point(locVerde.X - 6, locVerde.Y - 6);
-        }
-
-        private void SeleccionColor_Verde_MouseLeave(object sender, EventArgs e)
-        {
+            SeleccionColor_Amarillo.BackColor = Color.FromArgb(210, 160, 20);
             SeleccionColor_Verde.BackColor = Color.FromArgb(30, 140, 60);
+        }
+        private void OcultarSelectorColor()
+        {
+            SeleccionColor_Rojo.Size = tamanoOriginalBoton;
+            SeleccionColor_Azul.Size = tamanoOriginalBoton;
+            SeleccionColor_Amarillo.Size = tamanoOriginalBoton;
             SeleccionColor_Verde.Size = tamanoOriginalBoton;
+
+            SeleccionColor_Rojo.Location = locRojo;
+            SeleccionColor_Azul.Location = locAzul;
+            SeleccionColor_Amarillo.Location = locAmarillo;
             SeleccionColor_Verde.Location = locVerde;
+
+            iniciarColoresDeBotones();
+
+            SeleccionColor_Rojo.Visible = false;
+            SeleccionColor_Azul.Visible = false;
+            SeleccionColor_Amarillo.Visible = false;
+            SeleccionColor_Verde.Visible = false;
         }
-
-        private void SeleccionColor_Rojo_Click(object sender, EventArgs e)
-{
-    ColorSeleccionado(CardColor.Rojo);
-}
-
-private void SeleccionColor_Amarillo_Click(object sender, EventArgs e)
-{
-    ColorSeleccionado(CardColor.Amarillo);
-}
-
-private void SeleccionColor_Azul_Click(object sender, EventArgs e)
-{
-    ColorSeleccionado(CardColor.Azul);
-}
-
-private void SeleccionColor_Verde_Click(object sender, EventArgs e)
-{
-    ColorSeleccionado(CardColor.Verde);
-}
-
-        private void Form1_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void button3_Click(object sender, EventArgs e)
-        {
-            Sonar("boton");
-            CallUno(jugadores[turno]);
-            botonUno.Visible = false;
-        }
-
         private void ColorSeleccionado(CardColor colorElegido)
         {
             Sonar("boton");
@@ -1459,80 +1369,142 @@ private void SeleccionColor_Verde_Click(object sender, EventArgs e)
             }
         }
 
-        private void buttonSilencio_Click(object sender, EventArgs e)
-        {
 
+
+        private void SeleccionColor_Rojo_MouseEnter(object sender, EventArgs e)
+        {
+            SeleccionColor_Rojo.BackColor = Color.Red;
+            SeleccionColor_Rojo.Size = new Size(tamanoOriginalBoton.Width + 12, tamanoOriginalBoton.Height + 12);
+            SeleccionColor_Rojo.Location = new Point(locRojo.X - 6, locRojo.Y - 6);
         }
-
-        private void label_jugador2_Click(object sender, EventArgs e)
+        private void SeleccionColor_Rojo_MouseLeave(object sender, EventArgs e)
         {
-
-        }
-
-        // NUEVO: la carta robada vuela de la burra al descarte y se juega al aterrizar
-        private void VolarRobadaAlDescarte(Card carta, CardColor color)
-        {
-            CartaControl cc = new CartaControl();
-            cc.Carta = carta;
-            cc.BocaAbajo = false;
-            cc.EsJugable = true;
-            cartaVolando = cc;
-
-            robando = true;   // bloquea clics mientras vuela
-            pausa = 0;
-
-            alAterrizar = () =>
-            {
-                jugadores[turno].Agregar_carta(carta);
-                JugarCarta(carta, color);
-            };
-            IniciarVuelo(panelDescarte, new Point(5, 5));
-            timerReparto.Start();
-        }
-
-
-        void iniciarColoresDeBotones() // son botones rgb  no salen en la paleta de colores predeterminada
-        {
-            
             SeleccionColor_Rojo.BackColor = Color.FromArgb(180, 40, 40);
-            SeleccionColor_Azul.BackColor = Color.FromArgb(0, 90, 180);
-            SeleccionColor_Amarillo.BackColor = Color.FromArgb(210, 160, 20);
-            SeleccionColor_Verde.BackColor = Color.FromArgb(30, 140, 60);
-        }
-        private void OcultarSelectorColor()
-        {
             SeleccionColor_Rojo.Size = tamanoOriginalBoton;
-            SeleccionColor_Azul.Size = tamanoOriginalBoton;
-            SeleccionColor_Amarillo.Size = tamanoOriginalBoton;
-            SeleccionColor_Verde.Size = tamanoOriginalBoton;
-
             SeleccionColor_Rojo.Location = locRojo;
-            SeleccionColor_Azul.Location = locAzul;
+        }
+        private void SeleccionColor_Rojo_Click(object sender, EventArgs e)
+        {
+            ColorSeleccionado(CardColor.Rojo);
+        }
+        private void SeleccionColor_Amarillo_MouseEnter(object sender, EventArgs e)
+        {
+            SeleccionColor_Amarillo.BackColor = Color.Yellow;
+            SeleccionColor_Amarillo.Size = new Size(tamanoOriginalBoton.Width + 12, tamanoOriginalBoton.Height + 12);
+            SeleccionColor_Amarillo.Location = new Point(locAmarillo.X - 6, locAmarillo.Y - 6);
+        }
+
+        private void SeleccionColor_Amarillo_MouseLeave(object sender, EventArgs e)
+        {
+            SeleccionColor_Amarillo.BackColor = Color.FromArgb(210, 160, 20);
+            SeleccionColor_Amarillo.Size = tamanoOriginalBoton;
             SeleccionColor_Amarillo.Location = locAmarillo;
+        }
+        private void SeleccionColor_Amarillo_Click(object sender, EventArgs e)
+        {
+            ColorSeleccionado(CardColor.Amarillo);
+        }
+        private void SeleccionColor_Azul_MouseEnter(object sender, EventArgs e)
+        {
+            SeleccionColor_Azul.BackColor = Color.DodgerBlue;
+            SeleccionColor_Azul.Size = new Size(tamanoOriginalBoton.Width + 12, tamanoOriginalBoton.Height + 12);
+            SeleccionColor_Azul.Location = new Point(locAzul.X - 6, locAzul.Y - 6);
+        }
+        private void SeleccionColor_Azul_MouseLeave(object sender, EventArgs e)
+        {
+            SeleccionColor_Azul.BackColor = Color.FromArgb(0, 90, 180);
+            SeleccionColor_Azul.Size = tamanoOriginalBoton;
+            SeleccionColor_Azul.Location = locAzul;
+        }
+        private void SeleccionColor_Azul_Click(object sender, EventArgs e)
+        {
+            ColorSeleccionado(CardColor.Azul);
+        }
+        private void SeleccionColor_Verde_MouseEnter(object sender, EventArgs e)
+        {
+            SeleccionColor_Verde.BackColor = Color.LimeGreen;
+            SeleccionColor_Verde.Size = new Size(tamanoOriginalBoton.Width + 12, tamanoOriginalBoton.Height + 12);
+            SeleccionColor_Verde.Location = new Point(locVerde.X - 6, locVerde.Y - 6);
+        }
+        private void SeleccionColor_Verde_MouseLeave(object sender, EventArgs e)
+        {
+            SeleccionColor_Verde.BackColor = Color.FromArgb(30, 140, 60);
+            SeleccionColor_Verde.Size = tamanoOriginalBoton;
             SeleccionColor_Verde.Location = locVerde;
-
-            iniciarColoresDeBotones(); 
-
-            SeleccionColor_Rojo.Visible = false;
-            SeleccionColor_Azul.Visible = false;
-            SeleccionColor_Amarillo.Visible = false;
-            SeleccionColor_Verde.Visible = false;
         }
-
-
-        private void Avanzar_turno_Click(object sender, EventArgs e)
+        private void SeleccionColor_Verde_Click(object sender, EventArgs e)
         {
-            AvanzarTurno();
+            ColorSeleccionado(CardColor.Verde);
         }
 
-        private void Invertir_turno_Click(object sender, EventArgs e)
+
+        //eventos
+        private void Form1_Click(object sender, EventArgs e)
         {
-            InvertirSentido();
-            ActualizarVista();
+
         }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            Sonar("boton");
+            CallUno(jugadores[turno]);
+            botonUno.Visible = false;
+        }
+
+        
         private void button2_Click(object sender, EventArgs e)
         {
             JugarTurno();
+        }
+    }
+
+    // jugador
+    public class Player
+    {
+        public string Nombre;
+        private List<Card> mano;
+        public bool DijoUno;
+
+        public void callUno()
+        {
+            if (mano.Count == 2)
+            {
+                DijoUno = true;
+            }
+        }
+        public Player(string nombre, List<Card> mano)
+        {
+            this.Nombre = nombre;
+            this.mano = mano;
+            this.DijoUno = false;
+        }
+        public int cantidad_cartas
+        {
+            get { return mano.Count; }
+        }
+        public void Agregar_carta(Card carta)
+        {
+            if (carta != null)
+            {
+
+
+                mano.Add(carta);
+                DijoUno = false;
+            }
+        }
+        public bool Quitar_carta(Card carta)
+        {
+            return mano.Remove(carta);
+        }
+    }
+
+
+    public class PanelBuffered : Panel
+    {
+        public PanelBuffered()
+        {
+            this.DoubleBuffered = true;
+            this.ResizeRedraw = true;
         }
     }
 }
