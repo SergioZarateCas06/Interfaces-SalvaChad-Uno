@@ -50,6 +50,7 @@
             this.SeleccionColor_Amarillo = new System.Windows.Forms.Button();
             this.SeleccionColor_Verde = new System.Windows.Forms.Button();
             this.button3 = new System.Windows.Forms.Button();
+            this.buttonSilencio = new System.Windows.Forms.Button();
             this.panelBurra.SuspendLayout();
             this.panelDescarte.SuspendLayout();
             this.SuspendLayout();
@@ -58,7 +59,7 @@
             // 
             this.panel_rival_izquierda.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.panel_rival_izquierda.Location = new System.Drawing.Point(15, 203);
-            this.panel_rival_izquierda.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.panel_rival_izquierda.Margin = new System.Windows.Forms.Padding(2);
             this.panel_rival_izquierda.Name = "panel_rival_izquierda";
             this.panel_rival_izquierda.Size = new System.Drawing.Size(113, 163);
             this.panel_rival_izquierda.TabIndex = 6;
@@ -68,7 +69,7 @@
             this.panel_rival_arriba.BackColor = System.Drawing.SystemColors.Control;
             this.panel_rival_arriba.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.panel_rival_arriba.Location = new System.Drawing.Point(315, 16);
-            this.panel_rival_arriba.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.panel_rival_arriba.Margin = new System.Windows.Forms.Padding(2);
             this.panel_rival_arriba.Name = "panel_rival_arriba";
             this.panel_rival_arriba.Size = new System.Drawing.Size(300, 82);
             this.panel_rival_arriba.TabIndex = 7;
@@ -77,7 +78,7 @@
             // 
             this.panel_rival_derecha.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.panel_rival_derecha.Location = new System.Drawing.Point(795, 203);
-            this.panel_rival_derecha.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.panel_rival_derecha.Margin = new System.Windows.Forms.Padding(2);
             this.panel_rival_derecha.Name = "panel_rival_derecha";
             this.panel_rival_derecha.Size = new System.Drawing.Size(113, 163);
             this.panel_rival_derecha.TabIndex = 8;
@@ -86,7 +87,7 @@
             // 
             this.panelBurra.Controls.Add(this.labelBurra);
             this.panelBurra.Location = new System.Drawing.Point(390, 211);
-            this.panelBurra.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.panelBurra.Margin = new System.Windows.Forms.Padding(2);
             this.panelBurra.Name = "panelBurra";
             this.panelBurra.Size = new System.Drawing.Size(75, 122);
             this.panelBurra.TabIndex = 9;
@@ -108,7 +109,7 @@
             // 
             this.panelDescarte.Controls.Add(this.labelDescarte);
             this.panelDescarte.Location = new System.Drawing.Point(488, 211);
-            this.panelDescarte.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.panelDescarte.Margin = new System.Windows.Forms.Padding(2);
             this.panelDescarte.Name = "panelDescarte";
             this.panelDescarte.Size = new System.Drawing.Size(75, 122);
             this.panelDescarte.TabIndex = 10;
@@ -150,7 +151,7 @@
             // panel_mano_jugador1
             // 
             this.panel_mano_jugador1.Location = new System.Drawing.Point(231, 391);
-            this.panel_mano_jugador1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.panel_mano_jugador1.Margin = new System.Windows.Forms.Padding(2);
             this.panel_mano_jugador1.Name = "panel_mano_jugador1";
             this.panel_mano_jugador1.Size = new System.Drawing.Size(524, 171);
             this.panel_mano_jugador1.TabIndex = 12;
@@ -158,7 +159,7 @@
             // panelColor
             // 
             this.panelColor.Location = new System.Drawing.Point(567, 211);
-            this.panelColor.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.panelColor.Margin = new System.Windows.Forms.Padding(2);
             this.panelColor.Name = "panelColor";
             this.panelColor.Size = new System.Drawing.Size(30, 32);
             this.panelColor.TabIndex = 13;
@@ -300,7 +301,7 @@
             // button3
             // 
             this.button3.Location = new System.Drawing.Point(211, 318);
-            this.button3.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.button3.Margin = new System.Windows.Forms.Padding(2);
             this.button3.Name = "button3";
             this.button3.Size = new System.Drawing.Size(91, 47);
             this.button3.TabIndex = 25;
@@ -308,6 +309,16 @@
             this.button3.UseVisualStyleBackColor = true;
             this.button3.Visible = false;
             this.button3.Click += new System.EventHandler(this.button3_Click);
+            // 
+            // buttonSilencio
+            // 
+            this.buttonSilencio.Location = new System.Drawing.Point(848, -1);
+            this.buttonSilencio.Name = "buttonSilencio";
+            this.buttonSilencio.Size = new System.Drawing.Size(75, 23);
+            this.buttonSilencio.TabIndex = 26;
+            this.buttonSilencio.Text = "🔊 Sonido: ON";
+            this.buttonSilencio.UseVisualStyleBackColor = true;
+            this.buttonSilencio.Click += new System.EventHandler(this.buttonSilencio_Click);
             // 
             // Form1
             // 
@@ -317,6 +328,7 @@
             this.BackgroundImage = global::UnoGame.Properties.Resources.fondo_juego_1;
             this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.ClientSize = new System.Drawing.Size(924, 571);
+            this.Controls.Add(this.buttonSilencio);
             this.Controls.Add(this.button3);
             this.Controls.Add(this.SeleccionColor_Verde);
             this.Controls.Add(this.SeleccionColor_Amarillo);
@@ -338,7 +350,7 @@
             this.Controls.Add(this.panelDescarte);
             this.Controls.Add(this.panelBurra);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
-            this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.Margin = new System.Windows.Forms.Padding(2);
             this.MaximizeBox = false;
             this.MinimumSize = new System.Drawing.Size(753, 534);
             this.Name = "Form1";
@@ -377,6 +389,7 @@
         private System.Windows.Forms.Button SeleccionColor_Amarillo;
         private System.Windows.Forms.Button SeleccionColor_Verde;
         private System.Windows.Forms.Button button3;
+        private System.Windows.Forms.Button buttonSilencio;
     }
 }
 
