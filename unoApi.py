@@ -6,9 +6,8 @@ from datetime import datetime
 
 app = FastAPI()
 
-connStr = "mysql+pymysql://uno_api:hanasatominori@localhost:3306/unogameproyecto" # Despues del uno_api: se pone la contraseña del usuario
+connStr = "mysql+pymysql://uno_api:ClaveSegura2026@localhost:3306/unogameproyecto" # Despues del uno_api: se pone la contraseña del usuario
 engine = create_engine(connStr)
-
 
 class NuevaPartida(BaseModel):
     jugadores: List[str]

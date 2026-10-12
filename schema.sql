@@ -1,12 +1,12 @@
 CREATE DATABASE IF NOT EXISTS unogameproyecto;
 USE unogameproyecto;
 
-CREATE TABLE Partidas (
+CREATE TABLE `unogameproyecto`.`Partidas` (
     id INT AUTO_INCREMENT PRIMARY KEY,
     fecha DATETIME NOT NULL
 );
 
-CREATE TABLE ParticipantesPartida (
+CREATE TABLE `unogameproyecto`.`ParticipantesPartida` (
     id INT AUTO_INCREMENT PRIMARY KEY,
     partida_id INT NOT NULL,
     nombre_jugador VARCHAR(100) NOT NULL,
@@ -14,13 +14,13 @@ CREATE TABLE ParticipantesPartida (
     FOREIGN KEY (partida_id) REFERENCES Partidas(id)
 );
 
-CREATE TABLE Movimientos (
+CREATE TABLE `unogameproyecto`.`Movimientos` (
     id INT AUTO_INCREMENT PRIMARY KEY,
     partida_id INT NOT NULL,
     numero_turno INT NOT NULL,
     nombre_jugador VARCHAR(100) NOT NULL,
-    accion VARCHAR(50) NOT NULL,       -- "Jugar", "Robar", "ComerPenalizacion"
-    descripcion_carta VARCHAR(50),     -- ej. "Rojo 7", "Comodin +4", null si fue robar
+    accion VARCHAR(50) NOT NULL,
+    descripcion_carta VARCHAR(50),
     fecha DATETIME NOT NULL
 );
 
