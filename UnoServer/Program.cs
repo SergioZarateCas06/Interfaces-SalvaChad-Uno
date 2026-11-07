@@ -43,6 +43,8 @@ namespace UnoServer
                 puerto = indicado;
 
             new ServidorUno().Iniciar(puerto);
+
+            //Se prueba si el servidor espera a los jugadores para iniciar la partida
         }
     }
 }
