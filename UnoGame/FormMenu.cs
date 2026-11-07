@@ -8,7 +8,7 @@ using System.Linq; // Consultas sobre listas
 using System.Text; // Manejo de texto
 using System.Threading.Tasks;  // Tareas asíncronas
 using System.Windows.Forms; // Ventanas y controles de Windows Forms
- // Es la ventana del menú principal
+                            // Es la ventana del menú principal
 namespace UnoGame
 {
     public partial class FormMenu : Form
@@ -18,12 +18,19 @@ namespace UnoGame
         {
             InitializeComponent();
         }
-        // Esconde el menú, abre la ventana de configuración
+        // Esconde el menú, abre la ventana de conexión al servidor
         private void pbNuevaPartida_Click(object sender, EventArgs e)
         {
             this.Hide();
-            FormConfiguracion juego = new FormConfiguracion();
-            juego.ShowDialog();
+            FormConexion conexion = new FormConexion();
+            conexion.ShowDialog();
+            if (conexion.DialogResult == DialogResult.OK)
+            {
+                // TODO #10: abrir aquí la sala de espera con conexion.Cliente y conexion.Asiento.
+                // Mientras no exista, avisamos y cerramos la conexión para no dejarla abierta.
+                MessageBox.Show("Conectado como " + conexion.Nombre + " (asiento " + (conexion.Asiento + 1) + ").\nLa sala de espera (#10) aún no está implementada.");
+                conexion.Cliente.Cerrar();
+            }
             this.Show();
         }
         // Se ejecuta al hacer clic en "Historial"

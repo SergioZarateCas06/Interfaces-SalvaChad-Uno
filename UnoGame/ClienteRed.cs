@@ -13,12 +13,19 @@ namespace UnoGame
     public class ClienteRed
     {
         ConexionJson conexion;
-        Control interfaz;
+        volatile Control interfaz;
         volatile bool cerrando;
 
         public event Action<Mensaje> MensajeRecibido;   // llegó algo del servidor
         public event Action<string> Desconectado;       // se perdió la conexión (con el motivo)
         public bool Conectado { get; private set; }
+        public volatile Mensaje UltimaSala;             // último mensaje "sala" recibido (para quien tome el relevo)
+
+        // Cambia el formulario que recibe los eventos (al pasar de una ventana a otra)
+        public void CambiarInterfaz(Control nueva)
+        {
+            interfaz = nueva;
+        }
 
         // Abre la conexión y manda el mensaje "unirse". Lanza excepción si no se pudo conectar.
         // "interfaz" es el formulario que recibirá los eventos.
@@ -56,6 +63,7 @@ namespace UnoGame
                 {
                     Mensaje mensaje = conexion.Recibir();   // espera hasta que llegue una línea
                     if (mensaje == null) break;
+                    if (mensaje.Tipo == Tipos.Sala) UltimaSala = mensaje;   // se guarda aunque la ventana esté cambiando
                     EnHiloDeInterfaz(() =>
                     {
                         Action<Mensaje> manejador = MensajeRecibido;

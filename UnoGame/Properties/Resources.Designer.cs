@@ -519,6 +519,16 @@ namespace UnoGame.Properties {
         /// <summary>
         ///   Busca un recurso adaptado de tipo System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap ImagenBotonConectar {
+            get {
+                object obj = ResourceManager.GetObject("ImagenBotonConectar", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Busca un recurso adaptado de tipo System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap ImagenBotonHistorial1 {
             get {
                 object obj = ResourceManager.GetObject("ImagenBotonHistorial1", resourceCulture);
@@ -562,6 +572,16 @@ namespace UnoGame.Properties {
         internal static System.Drawing.Bitmap ImagenBotonUno1 {
             get {
                 object obj = ResourceManager.GetObject("ImagenBotonUno1", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Busca un recurso adaptado de tipo System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap ImagenBotonVolver {
+            get {
+                object obj = ResourceManager.GetObject("ImagenBotonVolver", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
