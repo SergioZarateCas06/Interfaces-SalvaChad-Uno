@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,22 +11,22 @@ namespace UnoGame
     // Lado cliente de la conexión: se conecta al servidor, escucha sus mensajes en un hilo
     // aparte y se los entrega al formulario ya en el hilo de la interfaz (BeginInvoke),
     // porque los controles de Windows Forms solo se pueden tocar desde ese hilo.
+    //
+    // Los mensajes pasan por una cola: si en un momento nadie está suscrito (por ejemplo, mientras
+    // se pasa de una ventana a otra), esperan en la cola y se entregan en orden cuando alguien
+    // se suscribe y llama a CambiarInterfaz. Así no se pierde ningún mensaje.
     public class ClienteRed
     {
         ConexionJson conexion;
         volatile Control interfaz;
         volatile bool cerrando;
+        readonly object candado = new object();
+        // Mensajes (Mensaje) o avisos de desconexión (string) pendientes de entregar, en orden de llegada
+        readonly Queue<object> bandeja = new Queue<object>();
 
         public event Action<Mensaje> MensajeRecibido;   // llegó algo del servidor
         public event Action<string> Desconectado;       // se perdió la conexión (con el motivo)
         public bool Conectado { get; private set; }
-        public volatile Mensaje UltimaSala;             // último mensaje "sala" recibido (para quien tome el relevo)
-
-        // Cambia el formulario que recibe los eventos (al pasar de una ventana a otra)
-        public void CambiarInterfaz(Control nueva)
-        {
-            interfaz = nueva;
-        }
 
         // Abre la conexión y manda el mensaje "unirse". Lanza excepción si no se pudo conectar.
         // "interfaz" es el formulario que recibirá los eventos.
@@ -55,6 +56,33 @@ namespace UnoGame
             hilo.Start();
         }
 
+        // Pasa la entrega de mensajes a otra ventana. Orden correcto al cambiar de ventana:
+        //   1) la ventana nueva se suscribe a MensajeRecibido / Desconectado
+        //   2) la ventana nueva llama a CambiarInterfaz(this)
+        // Lo que haya quedado en la cola se le entrega en cuanto su ventana esté lista.
+        public void CambiarInterfaz(Control nueva)
+        {
+            interfaz = nueva;
+            if (nueva == null) return;
+
+            if (nueva.IsHandleCreated)
+            {
+                Avisar();
+            }
+            else
+            {
+                // La ventana aún no se ha mostrado (p. ej. se llamó desde su constructor):
+                // esperamos a que tenga handle para poder entregarle los mensajes.
+                EventHandler alCrear = null;
+                alCrear = (s, e) =>
+                {
+                    nueva.HandleCreated -= alCrear;
+                    Avisar();
+                };
+                nueva.HandleCreated += alCrear;
+            }
+        }
+
         void Escuchar()
         {
             try
@@ -63,12 +91,7 @@ namespace UnoGame
                 {
                     Mensaje mensaje = conexion.Recibir();   // espera hasta que llegue una línea
                     if (mensaje == null) break;
-                    if (mensaje.Tipo == Tipos.Sala) UltimaSala = mensaje;   // se guarda aunque la ventana esté cambiando
-                    EnHiloDeInterfaz(() =>
-                    {
-                        Action<Mensaje> manejador = MensajeRecibido;
-                        if (manejador != null) manejador(mensaje);
-                    });
+                    Encolar(mensaje);
                 }
             }
             catch (Exception)
@@ -77,22 +100,62 @@ namespace UnoGame
             }
 
             Conectado = false;
-            if (!cerrando)
-            {
-                EnHiloDeInterfaz(() =>
-                {
-                    Action<string> manejador = Desconectado;
-                    if (manejador != null) manejador("Se perdió la conexión con el servidor.");
-                });
-            }
+            if (!cerrando) Encolar("Se perdió la conexión con el servidor.");
         }
 
-        void EnHiloDeInterfaz(Action accion)
+        void Encolar(object elemento)
+        {
+            lock (candado)
+            {
+                bandeja.Enqueue(elemento);
+            }
+            Avisar();
+        }
+
+        // Pide a la ventana actual que vacíe la cola (en el hilo de la interfaz)
+        void Avisar()
         {
             Control c = interfaz;
-            if (c == null || c.IsDisposed || !c.IsHandleCreated) return;
-            try { c.BeginInvoke(accion); }
+            if (c == null || c.IsDisposed || !c.IsHandleCreated) return;   // se queda en cola
+            try { c.BeginInvoke(new Action(Vaciar)); }
             catch (InvalidOperationException) { }   // la ventana se cerró justo ahora
+        }
+
+        // Se ejecuta en el hilo de la interfaz: entrega los mensajes en orden mientras haya
+        // alguien suscrito. Si no hay nadie, los deja en la cola.
+        void Vaciar()
+        {
+            while (true)
+            {
+                Mensaje mensaje = null;
+                string motivo = null;
+                Action<Mensaje> alMensaje = null;
+                Action<string> alDesconectar = null;
+
+                lock (candado)
+                {
+                    if (bandeja.Count == 0) return;
+                    object siguiente = bandeja.Peek();
+                    mensaje = siguiente as Mensaje;
+                    if (mensaje != null)
+                    {
+                        alMensaje = MensajeRecibido;
+                        if (alMensaje == null) return;   // nadie escucha todavía
+                    }
+                    else
+                    {
+                        motivo = (string)siguiente;
+                        alDesconectar = Desconectado;
+                        if (alDesconectar == null) return;
+                    }
+                    bandeja.Dequeue();
+                }
+
+                // Se invoca fuera del candado: el manejador puede cambiar de ventana,
+                // suscribirse o incluso abrir otra ventana modal.
+                if (alMensaje != null) alMensaje(mensaje);
+                else alDesconectar(motivo);
+            }
         }
 
         public void Enviar(Mensaje mensaje)
@@ -126,6 +189,7 @@ namespace UnoGame
         {
             cerrando = true;
             Conectado = false;
+            lock (candado) { bandeja.Clear(); }
             if (conexion != null) conexion.Cerrar();
         }
     }

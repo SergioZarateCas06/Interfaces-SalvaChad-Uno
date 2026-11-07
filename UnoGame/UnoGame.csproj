@@ -125,6 +125,9 @@
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
+    <Compile Include="Form1.Red.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="FormConexion.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -155,6 +158,12 @@
     <Compile Include="FormMenu.Designer.cs">
       <DependentUpon>FormMenu.cs</DependentUpon>
     </Compile>
+    <Compile Include="FormSalaEspera.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormSalaEspera.Designer.cs">
+      <DependentUpon>FormSalaEspera.cs</DependentUpon>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Protocolo.cs" />
@@ -178,6 +187,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="FormMenu.resx">
       <DependentUpon>FormMenu.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormSalaEspera.resx">
+      <DependentUpon>FormSalaEspera.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
