@@ -118,6 +118,7 @@
     <Compile Include="CartaControl.Designer.cs">
       <DependentUpon>CartaControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="ClienteRed.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -150,6 +151,7 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Protocolo.cs" />
     <EmbeddedResource Include="CartaControl.resx">
       <DependentUpon>CartaControl.cs</DependentUpon>
     </EmbeddedResource>
