@@ -49,6 +49,8 @@ namespace UnoServer
             //Se prueba que se apliquen las reglas del Uno y que todos los usarios reciben el mismo mensaje cuando alguien gano
 
             //Se prueban las desconexiones a media partida
+
+            //Se prueba que las partidas se guarden en la base de datos
         }
     }
 }
