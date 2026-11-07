@@ -89,9 +89,11 @@
     <Compile Include="..\UnoGame\Protocolo.cs">
       <Link>Protocolo.cs</Link>
     </Compile>
+    <Compile Include="ClienteBots.cs" />
     <Compile Include="JuegoUno.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="PruebasValidacion.cs" />
     <Compile Include="ServidorUno.cs" />
     <Compile Include="Simulacion.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">
