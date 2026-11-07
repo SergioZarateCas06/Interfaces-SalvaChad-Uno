@@ -47,6 +47,8 @@ namespace UnoServer
             //Se prueba si el servidor espera a los jugadores para iniciar la partida
 
             //Se prueba que se apliquen las reglas del Uno y que todos los usarios reciben el mismo mensaje cuando alguien gano
+
+            //Se prueban las desconexiones a media partida
         }
     }
 }
