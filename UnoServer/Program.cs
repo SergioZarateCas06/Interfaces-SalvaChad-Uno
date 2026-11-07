@@ -21,6 +21,22 @@ namespace UnoServer
                 return;
             }
 
+            if (args.Length > 0 && args[0].ToLower() == "bots")
+            {
+                ClienteBots.Ejecutar(args);
+                Console.WriteLine("Presiona una tecla para salir...");
+                Console.ReadKey();
+                return;
+            }
+
+            if (args.Length > 0 && args[0].ToLower() == "validar")
+            {
+                PruebasValidacion.Ejecutar();
+                Console.WriteLine("Presiona una tecla para salir...");
+                Console.ReadKey();
+                return;
+            }
+
             int puerto = Protocolo.PuertoPorDefecto;
             int indicado;
             if (args.Length > 0 && int.TryParse(args[0], out indicado))
