@@ -1,3 +1,4 @@
 <Solution>
+  <Project Path="../UnoServer/UnoServer.csproj" Id="f5f7f6fa-947c-4978-aaf2-56e114bad26f" />
   <Project Path="UnoGame.csproj" Id="faa88dab-8d55-4c62-9b3a-c540dd2d30e4" />
 </Solution>
