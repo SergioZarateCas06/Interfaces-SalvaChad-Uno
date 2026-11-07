@@ -26,11 +26,12 @@ namespace UnoGame
             conexion.ShowDialog();
             if (conexion.DialogResult == DialogResult.OK)
             {
-                // TODO #10: abrir aquí la sala de espera con conexion.Cliente y conexion.Asiento.
-                // Mientras no exista, avisamos y cerramos la conexión para no dejarla abierta.
-                MessageBox.Show("Conectado como " + conexion.Nombre + " (asiento " + (conexion.Asiento + 1) + ").\nLa sala de espera (#10) aún no está implementada.");
-                conexion.Cliente.Cerrar();
+                // Conectados: pasamos a la sala de espera, que abre la mesa cuando empieza la partida
+                FormSalaEspera sala = new FormSalaEspera(conexion.Cliente, conexion.Nombre);
+                sala.ShowDialog();
+                sala.Dispose();
             }
+            conexion.Dispose();
             this.Show();
         }
         // Se ejecuta al hacer clic en "Historial"

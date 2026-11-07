@@ -1069,6 +1069,8 @@ namespace UnoGame
         // Prepara y arranca una partida nueva: limpia todo, baraja, crea la partida en el servidor y empieza a repartir
         private async void RepartirCartas()
         {
+            if (modoRed) 
+                return;
             // Reinicia las banderas y detiene cualquier animación anterior
             timerReparto.Stop();
             comiendo = false;
