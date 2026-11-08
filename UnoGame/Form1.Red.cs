@@ -57,11 +57,19 @@ namespace UnoGame
             {
                 AplicarEstado(mensaje.Estado);
             }
+            else if (mensaje.Tipo == Tipos.Evento)
+            {
+                AgregarEvento(mensaje.Texto);
+            }
+            else if (mensaje.Tipo == Tipos.Error)
+            {
+                AgregarEvento("Error: " + mensaje.Texto);
+            }
             else if (mensaje.Tipo == Tipos.Abortada)
             {
                 CerrarPorRed(string.IsNullOrWhiteSpace(mensaje.Texto) ? "La partida fue cancelada." : mensaje.Texto);
             }
-            // TODO (issue de la mesa en red): Evento, Error y Fin
+            // TODO (otro issue): Fin
         }
 
         void AlDesconectarRed(string motivo)
@@ -162,7 +170,25 @@ namespace UnoGame
             if (carta.Type != CardType.Numero && carta.Type == tope.Type) return true;
             return false;
         }
-        
+
+        void AgregarEvento(string texto)
+        {
+            if (string.IsNullOrWhiteSpace(texto) || listaEventos.IsDisposed) return;
+
+            // Se conservan solo las últimas 100 líneas
+            string[] lineas = listaEventos.Lines;
+            if (lineas.Length > 150)
+            {
+                string[] ultimas = new string[100];
+                Array.Copy(lineas, lineas.Length - 100, ultimas, 0, 100);
+                listaEventos.Lines = ultimas;
+            }
+
+            listaEventos.AppendText(texto + "\n");
+            listaEventos.SelectionStart = listaEventos.TextLength;
+            listaEventos.ScrollToCaret();
+        }
+
         bool EsMiTurnoRed()
         {
             return estadoActual != null && !estadoActual.Terminada
