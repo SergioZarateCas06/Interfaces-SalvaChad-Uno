@@ -11,19 +11,26 @@ namespace UnoGame
     public partial class Form1
     {
         ClienteRed cliente;          // conexión con el servidor (null en el modo local de antes)
-        bool modoRed;                // true: la mesa la maneja el servidor, no el reparto local
         EstadoJuego estadoActual;    // último estado recibido
         Card comodinDeMano;
 
         // Abre la mesa para una partida en red. Lo llama la sala de espera con el primer estado.
-        // Reutiliza el constructor anterior con los nombres que vienen en el estado.
         public Form1(ClienteRed cliente, EstadoJuego estadoInicial)
-            : this(Nombre(estadoInicial, 0), Nombre(estadoInicial, 1), Nombre(estadoInicial, 2), Nombre(estadoInicial, 3))
         {
-            this.cliente = cliente;
-            modoRed = true;
+            InitializeComponent();
+            this.DoubleBuffered = true;
+            this.SetStyle(ControlStyles.AllPaintingInWmPaint |
+                          ControlStyles.UserPaint |
+                          ControlStyles.OptimizedDoubleBuffer, true);
+            this.UpdateStyles();
+            CargarSonidos();
+            buttonSilencio.Click += (s, e) => AlternarSilencio();
+            IniciarMusica();
+            iniciarTamanoDeBotones();
+            iniciarColoresDeBotones();
 
-            // Primero suscribirse y después CambiarInterfaz: lo que llegó mientras tanto se entrega en orden
+            this.cliente = cliente;
+
             cliente.MensajeRecibido += AlRecibirMensajeRed;
             cliente.Desconectado += AlDesconectarRed;
             cliente.CambiarInterfaz(this);
