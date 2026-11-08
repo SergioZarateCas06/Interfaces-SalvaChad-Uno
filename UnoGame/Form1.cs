@@ -762,16 +762,15 @@ namespace UnoGame
                                   jugadores[idxDerecha].cantidad_cartas + " cartas";
 
             // Dibujar zonas
-            MostrarManoJugador();
-            MostrarDescarte();
+            MostrarManoJugador(manosJugadores[turno], JugadaValida);
+            MostrarDescarte(VerCartaSuperior());
             MostrarBurra();
-            MostrarRival(panel_rival_arriba, idxArriba, RotateFlipType.Rotate180FlipNone, true);
-            MostrarRival(panel_rival_izquierda, idxIzquierda, RotateFlipType.Rotate90FlipNone, false);
-            MostrarRival(panel_rival_derecha, idxDerecha, RotateFlipType.Rotate270FlipNone, false);
+            MostrarRival(panel_rival_arriba, jugadores[idxArriba].cantidad_cartas, RotateFlipType.Rotate180FlipNone, true);
+            MostrarRival(panel_rival_izquierda, jugadores[idxIzquierda].cantidad_cartas, RotateFlipType.Rotate90FlipNone, false);
+            MostrarRival(panel_rival_derecha, jugadores[idxDerecha].cantidad_cartas, RotateFlipType.Rotate270FlipNone, false);
 
-            // Indicadores de estado
-            MostrarColorActivo();
-            MostrarSentido();
+            MostrarColorActivo(colorActivo);
+            MostrarSentido(sentido);
             ActualizarBotonUno();
             ResumeLayout();
         }
@@ -781,10 +780,11 @@ namespace UnoGame
             ActualizarVista();
         }
         // Dibuja las cartas del jugador en turno, una al lado de otra
-        private void MostrarManoJugador()
+        private void MostrarManoJugador(List<Card> mano, Func<Card, bool> esJugable)
         {
             panel_mano_jugador1.Controls.Clear();
-            List<Card> mano = manosJugadores[turno]; // Borra lo que había dibujado
+
+
 
             int anchoCarta = 70;  // Ancho de cada carta
             int separacion = 75;  // Distancia ideal entre cartas
@@ -825,23 +825,24 @@ namespace UnoGame
                 CartaControl cc = new CartaControl();
                 cc.Carta = carta;
                 cc.BocaAbajo = false;
-                cc.EsJugable = JugadaValida(carta); // Se resalta si se puede jugar
+                cc.EsJugable = esJugable(carta);// Se resalta si se puede jugar
                 cc.Location = new Point(x, 10);
                 // Guardamos copias para que el clic use la carta correcta
                 Card cartaCapturada = carta;
                 CartaControl ccCapturado = cc;
-                cc.Click += (s, e) => IntentarJugarCarta(cartaCapturada, ccCapturado);
+                if (!modoRed) cc.Click += (s, e) => IntentarJugarCarta(cartaCapturada, ccCapturado);
 
                 panel_mano_jugador1.Controls.Add(cc);
                 x += separacionReal;
             }
         }
         // Dibuja las cartas de un rival boca abajo, en forma de abanico
-        private void MostrarRival(Panel panel, int indiceJugador, RotateFlipType giro, bool horizontal)
+        private void MostrarRival(Panel panel, int cantidad, RotateFlipType giro, bool horizontal)
         {
 
             panel.Controls.Clear();
-            int cantidad = jugadores[indiceJugador].cantidad_cartas;
+
+          
 
             int pos = 5;  // Posición de la primera carta
             int anchoCartaMini = 40;  // Ancho de la carta pequeña
@@ -878,10 +879,10 @@ namespace UnoGame
             }
         }
         // Dibuja la carta de arriba del descarte
-        private void MostrarDescarte()
+        private void MostrarDescarte(Card sup)
         {
             panelDescarte.Controls.Clear();
-            Card sup = VerCartaSuperior();
+            
             if (sup != null)
             {
                 CartaControl cc = new CartaControl();
@@ -904,11 +905,11 @@ namespace UnoGame
             cc.BocaAbajo = true;
             cc.Location = new Point(5, 5);
             cc.Cursor = Cursors.Hand;
-            cc.Click += (s, e) => TomarCartaYIntentarJugar(jugadores[turno].Nombre);
+            if (!modoRed) cc.Click += (s, e) => TomarCartaYIntentarJugar(jugadores[turno].Nombre);
             panelBurra.Controls.Add(cc);
         }
         // Muestra el color activo en un cuadro de color y en una etiqueta de texto
-        private void MostrarColorActivo()
+        private void MostrarColorActivo(CardColor colorActivo)
         {
             Color c;
             switch (colorActivo)
@@ -923,7 +924,7 @@ namespace UnoGame
             labelColor.Text = "Color actual: " + colorActivo;
         }
         // Muestra en una etiqueta hacia dónde va el sentido del juego
-        private void MostrarSentido()
+        private void MostrarSentido(int sentido)
         {
             if (sentido == 1)
                 labelSentido.Text = "Sentido: Izquierda";
@@ -1176,7 +1177,7 @@ namespace UnoGame
                     // Última carta:la primera del descarte (da inicio al juego)
                     descarte.Push(cartaEnVuelo);
                     colorActivo = cartaEnVuelo.Color;
-                    MostrarDescarte();
+                    MostrarDescarte(VerCartaSuperior());
                     repartoRonda++;
                 }
 
