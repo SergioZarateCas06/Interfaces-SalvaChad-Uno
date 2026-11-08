@@ -10,9 +10,11 @@ namespace UnoGame
     public class ApiCliente
     {
         private static readonly HttpClient cliente = new HttpClient(); // Objeto que envía y recibe las peticiones al servidor
-        private const string BaseUrl = "http://127.0.0.1:5000";
+        public static string Host = "127.0.0.1";
+        public static int Puerto = 5000;
+        private static string BaseUrl { get { return "http://" + Host + ":" + Puerto; } }
 
-        
+
         public async Task<int> CrearPartida(List<string> jugadores)
         {
             var body = new { jugadores = jugadores }; //Armamos el paquete de datos que enviaremos
