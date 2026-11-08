@@ -51,6 +51,7 @@
             this.SeleccionColor_Verde = new System.Windows.Forms.Button();
             this.buttonSilencio = new System.Windows.Forms.Button();
             this.botonUno = new System.Windows.Forms.PictureBox();
+            this.listaEventos = new System.Windows.Forms.RichTextBox();
             this.panelBurra.SuspendLayout();
             this.panelDescarte.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.botonUno)).BeginInit();
@@ -323,6 +324,20 @@
             this.botonUno.Visible = false;
             this.botonUno.Click += new System.EventHandler(this.button3_Click);
             // 
+            // listaEventos
+            // 
+            this.listaEventos.BackColor = System.Drawing.Color.White;
+            this.listaEventos.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.listaEventos.DetectUrls = false;
+            this.listaEventos.Location = new System.Drawing.Point(6, 395);
+            this.listaEventos.Name = "listaEventos";
+            this.listaEventos.ReadOnly = true;
+            this.listaEventos.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
+            this.listaEventos.Size = new System.Drawing.Size(185, 165);
+            this.listaEventos.TabIndex = 28;
+            this.listaEventos.TabStop = false;
+            this.listaEventos.Text = "";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -331,6 +346,7 @@
             this.BackgroundImage = global::UnoGame.Properties.Resources.fondo_juego_1;
             this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.ClientSize = new System.Drawing.Size(924, 571);
+            this.Controls.Add(this.listaEventos);
             this.Controls.Add(this.botonUno);
             this.Controls.Add(this.buttonSilencio);
             this.Controls.Add(this.SeleccionColor_Verde);
@@ -393,6 +409,7 @@
         private System.Windows.Forms.Button SeleccionColor_Verde;
         private System.Windows.Forms.Button buttonSilencio;
         private System.Windows.Forms.PictureBox botonUno;
+        private System.Windows.Forms.RichTextBox listaEventos;
     }
 }
 

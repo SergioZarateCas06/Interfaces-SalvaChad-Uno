@@ -314,10 +314,7 @@ namespace UnoGame
         private void MostrarAviso(string mensaje)
         {
             if (IsDisposed) return;
-            bool corria = timerReparto.Enabled;
-            timerReparto.Stop();
-            MessageBox.Show(mensaje, "Burra");
-            if (corria && !IsDisposed) timerReparto.Start();
+            AgregarEvento(mensaje);
 
         }
         // Revisa si una carta se puede jugar sobre la carta que está en la mesa
@@ -389,14 +386,14 @@ namespace UnoGame
             if (cartaPendiente != null) return; // Si hay un comodín esperando color, no hacemos nada
             if (partidaTerminada)
             {
-                MessageBox.Show("La partida ya terminó.");
+                AgregarEvento("La partida ya terminó.");
                 return;
             }
 
             if (!JugadaValida(cartaJugada))  // Si la jugada no es válida, suena un error y se detiene.
             {
                 Sonar("error");
-                MessageBox.Show("La jugada no es valida");
+                AgregarEvento("La jugada no es valida");
                 return;
             }
 
@@ -427,12 +424,12 @@ namespace UnoGame
             {
                 if (jugadores[turno].DijoUno)
                 {
-                    MessageBox.Show($"{jugadores[turno].Nombre} dijo UNO.");
+                    AgregarEvento($"{jugadores[turno].Nombre} dijo UNO.");
                 }
                 else
                 {
                     Sonar("error");
-                    MessageBox.Show($"{jugadores[turno].Nombre} no dijo UNO, come 2 cartas.");
+                    AgregarEvento($"{jugadores[turno].Nombre} no dijo UNO, come 2 cartas.");
                     for (int i = 0; i < 2; i++)
                         jugadores[turno].Agregar_carta(SacarCarta());
                 }
@@ -450,7 +447,7 @@ namespace UnoGame
             if (cartaJugada.Type == CardType.Salta)
             {
                 int jugadorSaltado = (turno + sentido + numJugadores) % numJugadores;
-                MessageBox.Show($"{jugadores[jugadorSaltado].Nombre} pierde turno.");
+                AgregarEvento($"{jugadores[jugadorSaltado].Nombre} pierde turno.");
                 AvanzarTurno();
             }
 
@@ -463,7 +460,7 @@ namespace UnoGame
                 // Anima las cartas que come y, al terminar, avanza dos turnos.
                 ComerConAnimacion(siguienteJugador, cantidad, () =>
                 {
-                    MessageBox.Show($"{jugadores[siguienteJugador].Nombre} come {cantidad} cartas.");
+                    AgregarEvento($"{jugadores[siguienteJugador].Nombre} come {cantidad} cartas.");
                     AvanzarTurno();   // el que comió pierde su turno
                     AvanzarTurno();
                 });
@@ -479,7 +476,7 @@ namespace UnoGame
             if (cartaPendiente != null) return;
             if (partidaTerminada)
             {
-                MessageBox.Show("La partida ya terminó. Inicia una nueva partida para seguir jugando.");
+                AgregarEvento("La partida ya terminó. Inicia una nueva partida para seguir jugando.");
                 return;
             }
 
@@ -535,12 +532,12 @@ namespace UnoGame
 
                     // Se ejecuta cuando el jugador hace clic en una carta de su mano
                     JugarCarta(cartaElegida, colorElegido);
-                    MessageBox.Show($"{nombreJugadorActual} jugó {cartaElegida}");
+                    AgregarEvento($"{nombreJugadorActual} jugó {cartaElegida}");
                     return;
                 }
                 else
                 {
-                    MessageBox.Show("Esa carta no es una jugada válida. Elige otra.");
+                    AgregarEvento("Esa carta no es una jugada válida. Elige otra.");
                     continue;
                 }
             }
@@ -553,14 +550,14 @@ namespace UnoGame
             if (cartaPendiente != null) return;
             if (partidaTerminada)
             {
-                MessageBox.Show("La partida ya terminó.");
+                AgregarEvento("La partida ya terminó.");
                 return;
             }
 
             if (!JugadaValida(cartaElegida))
             {
-                Sonar("error");   
-                MessageBox.Show("Esa carta no es una jugada válida.");
+                Sonar("error");
+                AgregarEvento("Esa carta no es una jugada válida.");
                 return;
             }
             //mostramos los 4 botones de color y esperamos la elección
@@ -634,7 +631,7 @@ namespace UnoGame
             if (cartaPendiente != null) return;
             if (partidaTerminada)
             {
-                MessageBox.Show("La partida ya terminó.");
+                AgregarEvento("La partida ya terminó.");
                 return;
             }
 
@@ -643,7 +640,7 @@ namespace UnoGame
             if (cartaRobada == null)
             {
                 Sonar("error");
-                MessageBox.Show("No quedan cartas para robar.");
+                AgregarEvento("No quedan cartas para robar.");
                 AvanzarTurno();
                 return;
             }
@@ -712,7 +709,7 @@ namespace UnoGame
         private async void ResolverCartaRobada(Card cartaRobada, string nombreJugadorActual)
         {
             jugadores[turno].Agregar_carta(cartaRobada);
-            MessageBox.Show($"{nombreJugadorActual} robó {cartaRobada} y no es jugable, se la queda.");
+            AgregarEvento($"{nombreJugadorActual} robó {cartaRobada} y no es jugable, se la queda.");
 
             numeroTurnoActual++;
             if (partidaIdActual != -1)
