@@ -47,6 +47,11 @@ namespace UnoGame
                 {
                     e.Cancel = true;
                 }
+                else if (cliente != null)
+                {
+                    // Salió a media partida: se corta la conexión y el servidor cancela la partida para todos
+                    cliente.Cerrar();
+                }
             }
         }
         // Se ejecuta cuando la ventana ya se cerró
@@ -186,14 +191,14 @@ namespace UnoGame
                 x += separacionReal;
             }
         }
-    
+
         // Dibuja las cartas de un rival boca abajo, en forma de abanico
         private void MostrarRival(Panel panel, int cantidad, RotateFlipType giro, bool horizontal)
         {
 
             panel.Controls.Clear();
 
-          
+
 
             int pos = 5;  // Posición de la primera carta
             int anchoCartaMini = 40;  // Ancho de la carta pequeña
@@ -233,7 +238,7 @@ namespace UnoGame
         private void MostrarDescarte(Card sup)
         {
             panelDescarte.Controls.Clear();
-            
+
             if (sup != null)
             {
                 CartaControl cc = new CartaControl();
@@ -473,7 +478,7 @@ namespace UnoGame
         {
 
         }
-        
+
         private void button3_Click(object sender, EventArgs e)
         {
             Sonar("boton");

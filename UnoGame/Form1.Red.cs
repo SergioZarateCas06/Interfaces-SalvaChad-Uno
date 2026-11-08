@@ -13,6 +13,9 @@ namespace UnoGame
         ClienteRed cliente;          // conexión con el servidor (null en el modo local de antes)
         EstadoJuego estadoActual;    // último estado recibido
         Card comodinDeMano;
+        Label labelEstadoRed;        // aviso discreto para errores del servidor (sin ventana modal)
+        System.Windows.Forms.Timer timerEstadoRed;
+        bool finManejado;            // ya se mostró el fin de partida (evita mostrarlo dos veces)
 
         // Abre la mesa para una partida en red. Lo llama la sala de espera con el primer estado.
         public Form1(ClienteRed cliente, EstadoJuego estadoInicial)
@@ -30,6 +33,7 @@ namespace UnoGame
             iniciarColoresDeBotones();
 
             this.cliente = cliente;
+            CrearEtiquetaEstadoRed();
 
             cliente.MensajeRecibido += AlRecibirMensajeRed;
             cliente.Desconectado += AlDesconectarRed;
@@ -70,13 +74,16 @@ namespace UnoGame
             }
             else if (mensaje.Tipo == Tipos.Error)
             {
-                AgregarEvento("Error: " + mensaje.Texto);
+                MostrarErrorDiscreto(mensaje.Texto);
+            }
+            else if (mensaje.Tipo == Tipos.Fin)
+            {
+                MostrarFinDePartida(mensaje);
             }
             else if (mensaje.Tipo == Tipos.Abortada)
             {
                 CerrarPorRed(string.IsNullOrWhiteSpace(mensaje.Texto) ? "La partida fue cancelada." : mensaje.Texto);
             }
-            // TODO (otro issue): Fin
         }
 
         void AlDesconectarRed(string motivo)
@@ -84,12 +91,80 @@ namespace UnoGame
             CerrarPorRed(motivo);
         }
 
+        // Partida cancelada o conexión perdida: avisa, cierra el cliente y vuelve al menú
         void CerrarPorRed(string aviso)
         {
-            if (cierreForzado) return;
+            if (cierreForzado || finManejado) return;
             cierreForzado = true;   // que FormClosing no pregunte "¿quieres salir?"
+            cliente.MensajeRecibido -= AlRecibirMensajeRed;
+            cliente.Desconectado -= AlDesconectarRed;
+            cliente.Cerrar();
             MessageBox.Show(this, aviso, "Partida", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            DialogResult = DialogResult.Cancel;
+            DialogResult = DialogResult.Cancel;   // la sala y el menú se encargan del resto
+        }
+
+        // Fin de la partida: muestra al ganador (el mismo para los 4 jugadores) y cierra la conexión.
+        // "Jugar de nuevo" -> DialogResult.Retry (vuelve a FormConexion); "Volver al menú" -> Cancel.
+        void MostrarFinDePartida(Mensaje mensaje)
+        {
+            if (finManejado || cierreForzado) return;
+            finManejado = true;
+            cierreForzado = true;   // ya no se pregunta al cerrar
+            partidaTerminada = true;
+
+            // Se suelta la conexión: el servidor reinicia su sala por su cuenta
+            cliente.MensajeRecibido -= AlRecibirMensajeRed;
+            cliente.Desconectado -= AlDesconectarRed;
+            cliente.Cerrar();
+
+            string ganador = string.IsNullOrWhiteSpace(mensaje.Texto) ? "?" : mensaje.Texto;
+            if (estadoActual != null && mensaje.Indice.HasValue && mensaje.Indice.Value == estadoActual.TuIndice)
+                Sonar("victoria");
+
+            FormFinPartida formFin = new FormFinPartida();
+            formFin.MostrarGanador(ganador);
+            formFin.ShowDialog(this);
+            DialogResult resultado = formFin.DialogResult;
+            formFin.Dispose();
+
+            DialogResult = resultado == DialogResult.Retry ? DialogResult.Retry : DialogResult.Cancel;
+        }
+
+        // ---------- Errores del servidor: etiqueta de estado, sin ventana modal ----------
+
+        void CrearEtiquetaEstadoRed()
+        {
+            labelEstadoRed = new Label();
+            labelEstadoRed.AutoSize = false;
+            labelEstadoRed.Location = new Point(6, 372);   // sobre la lista de eventos
+            labelEstadoRed.Size = new Size(185, 20);
+            labelEstadoRed.BackColor = Color.Transparent;
+            labelEstadoRed.ForeColor = Color.Firebrick;
+            labelEstadoRed.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Bold);
+            labelEstadoRed.TextAlign = ContentAlignment.MiddleLeft;
+            labelEstadoRed.Visible = false;
+            Controls.Add(labelEstadoRed);
+            labelEstadoRed.BringToFront();
+
+            timerEstadoRed = new System.Windows.Forms.Timer();
+            timerEstadoRed.Interval = 4000;   // el aviso se borra solo a los 4 segundos
+            timerEstadoRed.Tick += (s, e) =>
+            {
+                timerEstadoRed.Stop();
+                labelEstadoRed.Visible = false;
+            };
+            this.FormClosed += (s, e) => timerEstadoRed.Dispose();
+        }
+
+        void MostrarErrorDiscreto(string texto)
+        {
+            if (string.IsNullOrWhiteSpace(texto) || labelEstadoRed == null || labelEstadoRed.IsDisposed) return;
+            Sonar("error");
+            labelEstadoRed.Text = texto;
+            labelEstadoRed.Visible = true;
+            timerEstadoRed.Stop();
+            timerEstadoRed.Start();
+            AgregarEvento("Error: " + texto);   // además queda en el historial de eventos
         }
 
         // Redibuja toda la mesa a partir de lo que mandó el servidor.
