@@ -74,3 +74,15 @@ New-NetFirewallRule -DisplayName "UNO API" -Direction Inbound -Protocol TCP -Loc
 
 Get-ChildItem -Recurse | Unblock-File
 
+
+
+
+Comprobar conectividad de PC Cliente a PC Servidor
+* Test-NetConnection 192.168.x.x -Port 11111
+
+Modificar el firewall de PC Servidor
+* New-NetFirewallRule -DisplayName "UNO Servidor" -Direction Inbound -Protocol TCP -LocalPort 11111 -Action Allow -Profile Any
+* Get-NetFirewallRule -Action Block -Direction Inbound | Where-Object DisplayName -like "*UnoServer*" | Remove-NetFirewallRule
+
+Cambiar de Red Pública a Privada
+* Set-NetConnectionProfile -NetworkCategory Private
