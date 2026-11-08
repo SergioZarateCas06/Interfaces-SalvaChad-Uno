@@ -13,6 +13,7 @@ namespace UnoGame
         ClienteRed cliente;          // conexión con el servidor (null en el modo local de antes)
         bool modoRed;                // true: la mesa la maneja el servidor, no el reparto local
         EstadoJuego estadoActual;    // último estado recibido
+        Card comodinDeMano;
 
         // Abre la mesa para una partida en red. Lo llama la sala de espera con el primer estado.
         // Reutiliza el constructor anterior con los nombres que vienen en el estado.
@@ -134,6 +135,14 @@ namespace UnoGame
             MostrarSentido(estado.Sentido);
             botonUno.Visible = estado.PuedesDecirUno;
 
+            // Si ya no es mi turno, se cancela cualquier elección de color a medias
+            if (estado.Turno != yo || estado.Terminada) comodinDeMano = null;
+
+            // El selector de color se ve si hay comodín robado o uno de mi mano esperando color
+            if (estado.CartaPendiente != null || comodinDeMano != null) MostrarSelectorColor();
+            else OcultarSelectorColor();
+
+
             ResumeLayout();
         }
 
@@ -152,6 +161,67 @@ namespace UnoGame
             if (carta.Type == CardType.Numero && tope.Type == CardType.Numero && carta.Number == tope.Number) return true;
             if (carta.Type != CardType.Numero && carta.Type == tope.Type) return true;
             return false;
+        }
+        
+        bool EsMiTurnoRed()
+        {
+            return estadoActual != null && !estadoActual.Terminada
+                && estadoActual.Turno == estadoActual.TuIndice;
+        }
+
+        void MostrarSelectorColor()
+        {
+            SeleccionColor_Rojo.Visible = true;
+            SeleccionColor_Azul.Visible = true;
+            SeleccionColor_Amarillo.Visible = true;
+            SeleccionColor_Verde.Visible = true;
+        }
+
+        // Clic en una carta de mi mano (solo manda el mensaje, no cambia nada local)
+        void ClicCartaRed(Card carta)
+        {
+            if (!EsMiTurnoRed()) return;
+            if (estadoActual.CartaPendiente != null || comodinDeMano != null) return;
+
+            if (!JugadaValidaVista(carta))
+            {
+                Sonar("error");
+                return;
+            }
+
+            if (carta.Type == CardType.Comodin || carta.Type == CardType.Mas4)
+            {
+                // Primero se elige el color; la carta se manda en ColorSeleccionadoRed
+                Sonar("comodin");
+                comodinDeMano = carta;
+                MostrarSelectorColor();
+                return;
+            }
+
+            cliente.Jugar(carta, CardColor.Ninguno);
+        }
+
+        // Clic en la burra
+        void ClicBurraRed()
+        {
+            if (!EsMiTurnoRed()) return;
+            if (estadoActual.CartaPendiente != null || comodinDeMano != null) return;
+            cliente.Robar();
+        }
+
+        // Se eligió un color en el selector: o es un comodín de mi mano o es el que robé
+        void ColorSeleccionadoRed(CardColor color)
+        {
+            if (comodinDeMano != null)
+            {
+                Card carta = comodinDeMano;
+                comodinDeMano = null;
+                cliente.Jugar(carta, color);
+            }
+            else if (estadoActual != null && estadoActual.CartaPendiente != null)
+            {
+                cliente.ElegirColor(color);
+            }
         }
     }
 }
