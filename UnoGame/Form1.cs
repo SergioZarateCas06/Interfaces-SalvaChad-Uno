@@ -830,7 +830,11 @@ namespace UnoGame
                 // Guardamos copias para que el clic use la carta correcta
                 Card cartaCapturada = carta;
                 CartaControl ccCapturado = cc;
-                if (!modoRed) cc.Click += (s, e) => IntentarJugarCarta(cartaCapturada, ccCapturado);
+                cc.Click += (s, e) =>
+                {
+                    if (modoRed) ClicCartaRed(cartaCapturada);
+                    else IntentarJugarCarta(cartaCapturada, ccCapturado);
+                };
 
                 panel_mano_jugador1.Controls.Add(cc);
                 x += separacionReal;
@@ -905,7 +909,11 @@ namespace UnoGame
             cc.BocaAbajo = true;
             cc.Location = new Point(5, 5);
             cc.Cursor = Cursors.Hand;
-            if (!modoRed) cc.Click += (s, e) => TomarCartaYIntentarJugar(jugadores[turno].Nombre);
+            cc.Click += (s, e) =>
+            {
+                if (modoRed) ClicBurraRed();
+                else TomarCartaYIntentarJugar(jugadores[turno].Nombre);
+            };
             panelBurra.Controls.Add(cc);
         }
         // Muestra el color activo en un cuadro de color y en una etiqueta de texto
@@ -1416,7 +1424,7 @@ namespace UnoGame
         {
             Sonar("boton");
             OcultarSelectorColor();
-
+            if (modoRed) { ColorSeleccionadoRed(colorElegido); return; }
             if (cartaPendiente != null)
             {
                 Card cartaAProcesar = cartaPendiente;
@@ -1521,6 +1529,11 @@ namespace UnoGame
         private void button3_Click(object sender, EventArgs e)
         {
             Sonar("boton");
+            if (modoRed)
+            {
+                cliente.DecirUno();   // el botón se oculta solo cuando llegue el nuevo estado
+                return;
+            }
             CallUno(jugadores[turno]);
             botonUno.Visible = false;
         }
