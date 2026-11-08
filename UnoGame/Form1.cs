@@ -61,6 +61,7 @@ namespace UnoGame
             if (salidaMusica != null) salidaMusica.Dispose();
             if (lectorMusica != null) lectorMusica.Dispose();
             foreach (Bitmap b in cacheReversos.Values) b.Dispose();
+            DetenerAnimaciones();
             base.OnFormClosed(e);
         }
         // Carga todos los efectos de sonido desde los Resources del proyecto

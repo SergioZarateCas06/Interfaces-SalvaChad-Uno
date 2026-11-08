@@ -24,7 +24,7 @@ namespace UnoServer
     //   UnoServer.exe bots 127.0.0.1 11111 25           el Bot3 se va a media partida
     public static class ClienteBots
     {
-        const int PausaMs = 120;   // pausa antes de cada acción para poder seguir lo que pasa
+        const int PausaMs = 1200;   // pausa antes de cada acción para poder seguir lo que pasa
 
         public static void Ejecutar(string[] args)
         {
