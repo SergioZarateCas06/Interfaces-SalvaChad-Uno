@@ -18,20 +18,35 @@ namespace UnoGame
         {
             InitializeComponent();
         }
-        // Esconde el menú, abre la ventana de conexión al servidor
+        // Esconde el menú, abre la ventana de conexión al servidor.
+        // Si al terminar la partida se elige "Jugar de nuevo", se vuelve a FormConexion
+        // con el nombre y la IP ya puestos, sin reiniciar el programa.
         private void pbNuevaPartida_Click(object sender, EventArgs e)
         {
             this.Hide();
-            FormConexion conexion = new FormConexion();
-            conexion.ShowDialog();
-            if (conexion.DialogResult == DialogResult.OK)
+            string nombre = "", ip = null;
+            int puerto = 0;
+            bool otraVez;
+            do
             {
-                // Conectados: pasamos a la sala de espera, que abre la mesa cuando empieza la partida
-                FormSalaEspera sala = new FormSalaEspera(conexion.Cliente, conexion.Nombre);
-                sala.ShowDialog();
-                sala.Dispose();
-            }
-            conexion.Dispose();
+                otraVez = false;
+                FormConexion conexion = new FormConexion(nombre, ip, puerto);
+                conexion.ShowDialog();
+                if (conexion.DialogResult == DialogResult.OK)
+                {
+                    // Recordamos los datos por si piden jugar de nuevo
+                    nombre = conexion.Nombre;
+                    ip = conexion.Ip;
+                    puerto = conexion.Puerto;
+
+                    // Conectados: sala de espera, que abre la mesa cuando empieza la partida
+                    FormSalaEspera sala = new FormSalaEspera(conexion.Cliente, conexion.Nombre);
+                    sala.ShowDialog();
+                    otraVez = sala.DialogResult == DialogResult.Retry;
+                    sala.Dispose();
+                }
+                conexion.Dispose();
+            } while (otraVez);
             this.Show();
         }
         // Se ejecuta al hacer clic en "Historial"

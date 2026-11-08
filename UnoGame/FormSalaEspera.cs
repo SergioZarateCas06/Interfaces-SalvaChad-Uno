@@ -105,12 +105,14 @@ namespace UnoGame
             Opacity = 0;   // escondemos la sala sin cerrar el diálogo modal
             Form1 mesa = new Form1(cliente, estado);
             mesa.ShowDialog();
+            DialogResult resultadoMesa = mesa.DialogResult;
             mesa.Dispose();
 
-            // La partida terminó (o se salió): se cierra la conexión y se vuelve al menú
+            // La partida terminó (o se salió): se cierra la conexión.
+            // Retry = "Jugar de nuevo" (el menú reabre FormConexion); cualquier otra cosa = volver al menú
             saliendo = true;
             cliente.Cerrar();
-            DialogResult = DialogResult.Cancel;
+            DialogResult = resultadoMesa == DialogResult.Retry ? DialogResult.Retry : DialogResult.Cancel;
         }
 
         // ---------- Salir ----------

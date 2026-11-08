@@ -15,18 +15,27 @@ namespace UnoGame
         bool conectando;             // true mientras esperamos al servidor
         bool resuelto;               // true cuando ya hubo bienvenida o rechazo (ignora avisos tardíos)
         string ipAGuardar;
+        int puertoActual;
 
         // Lo que la sala de espera (#10) necesita cuando esta ventana se cierra con DialogResult.OK
         public ClienteRed Cliente { get; private set; }   // conexión ya abierta y aceptada
         public int Asiento { get; private set; }          // asiento asignado por el servidor (0..3)
         public string Nombre { get; private set; }        // nombre con el que entramos
+        public string Ip { get; private set; }            // IP a la que nos conectamos
+        public int Puerto { get; private set; }           // puerto al que nos conectamos
 
-        public FormConexion()
+        public FormConexion() : this("", null, 0)
+        {
+        }
+
+        // Para "Jugar de nuevo": abre la ventana con el nombre, la IP y el puerto ya puestos
+        public FormConexion(string nombre, string ip, int puerto)
         {
             InitializeComponent();   // Crea los controles del diseñador
             BackgroundImage = Properties.Resources.fondomenu;   // Mismo fondo que el menú
-            txtPuerto.Text = Protocolo.PuertoPorDefecto.ToString();
-            txtIp.Text = LeerUltimaIp();
+            txtNombre.Text = nombre ?? "";
+            txtPuerto.Text = (puerto > 0 ? puerto : Protocolo.PuertoPorDefecto).ToString();
+            txtIp.Text = string.IsNullOrWhiteSpace(ip) ? LeerUltimaIp() : ip;
         }
 
         // ---------- Validación ----------
@@ -87,6 +96,7 @@ namespace UnoGame
             nuevo.Desconectado += AlDesconectar;
             cliente = nuevo;
             ipAGuardar = ip;
+            puertoActual = puerto;
             Nombre = nombre;
 
             try
@@ -128,6 +138,8 @@ namespace UnoGame
 
                 // Entregamos la conexión a la siguiente ventana: dejamos de escuchar aquí
                 Cliente = cliente;
+                Ip = ipAGuardar;
+                Puerto = puertoActual;
                 cliente.MensajeRecibido -= AlRecibirMensaje;
                 cliente.Desconectado -= AlDesconectar;
                 conectando = false;
