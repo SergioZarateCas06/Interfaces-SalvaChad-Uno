@@ -29,7 +29,7 @@ uvicorn unoApi:app --host 0.0.0.0 --port 5000
 
 #### Paso 3 Lanzar el servidor de juego
 
-Primero compilar archivos en la carpeta UnoServer, después en UnoServer/bin/Debug aparecerá el archivo ejecutable de UnoServer.exe importante ejecutar el .exe en el administrador de archivos o terminal, en UnoGame/bin/Debug saldrá el .exe pero del juego como tal
+Primero compilar archivos en la carpeta UnoServer e iniciar en VisualStudio (UnoGame y UnoServer), después en UnoServer/bin/Debug aparecerá el archivo ejecutable de UnoServer.exe importante ejecutar el .exe en el administrador de archivos o terminal, en UnoGame/bin/Debug saldrá el .exe pero del juego como tal
 
 
 

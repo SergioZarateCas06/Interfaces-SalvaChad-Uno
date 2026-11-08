@@ -119,6 +119,9 @@
       <DependentUpon>CartaControl.cs</DependentUpon>
     </Compile>
     <Compile Include="ClienteRed.cs" />
+    <Compile Include="Form1.Animaciones.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>

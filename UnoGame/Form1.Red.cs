@@ -45,7 +45,7 @@ namespace UnoGame
                 cliente.Desconectado -= AlDesconectarRed;
                 cliente.Cerrar();
             };
-
+            IniciarAnimaciones();
             AplicarEstado(estadoInicial);
         }
 
@@ -172,6 +172,7 @@ namespace UnoGame
         void AplicarEstado(EstadoJuego estado)
         {
             if (estado == null) return;
+            EstadoJuego previo = estadoActual;
             estadoActual = estado;
             partidaTerminada = estado.Terminada;   // MostrarBurra ya consulta este campo
 
@@ -232,7 +233,8 @@ namespace UnoGame
             if (estado.CartaPendiente != null || comodinDeMano != null) MostrarSelectorColor();
             else OcultarSelectorColor();
 
-
+            if (previo == null) repartoPendiente = true;
+            else AnimarCambios(previo, estado, sup);
             ResumeLayout();
         }
 
