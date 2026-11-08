@@ -215,7 +215,7 @@ namespace UnoGame
             return Path.Combine(carpeta, "ultima_ip.txt");
         }
 
-        static string LeerUltimaIp()
+        internal static string LeerUltimaIp()
         {
             try
             {

@@ -52,6 +52,8 @@ namespace UnoGame
         // Se ejecuta al hacer clic en "Historial"
         private void pbHistorial_Click(object sender, EventArgs e)
         {
+            string ip = FormConexion.LeerUltimaIp();   // con el nombre de la clase
+            if (!string.IsNullOrWhiteSpace(ip)) ApiCliente.Host = ip;
             this.Hide();
             FormHistorial historial = new FormHistorial();
             historial.ShowDialog();
